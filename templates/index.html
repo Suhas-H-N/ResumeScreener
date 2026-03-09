@@ -1,0 +1,105 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+<title>AI Resume Screener</title>
+
+<link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+
+</head>
+
+<body>
+
+<div class="container">
+
+<header>
+<h1>🤖 AI Resume Screener</h1>
+<p>Upload a resume and compare it with a job description</p>
+</header>
+
+<main>
+
+<form id="screeningForm">
+
+<label>Upload Resume</label>
+<input type="file" name="resume_file" id="resumeFile" required>
+
+<label>Job Description</label>
+<textarea name="job_description" id="jobDescription" placeholder="Paste job description here..." required></textarea>
+
+<button type="submit">Analyze Resume</button>
+
+</form>
+
+<div id="resultBox" style="display:none">
+
+<h2>Match Score: <span id="score"></span>%</h2>
+
+<h3>Matching Keywords</h3>
+<ul id="matching"></ul>
+
+<h3>Missing Keywords</h3>
+<ul id="missing"></ul>
+
+<p>Total Resume Words: <span id="wordCount"></span></p>
+
+</div>
+
+</main>
+
+</div>
+
+<script>
+
+const form = document.getElementById("screeningForm");
+
+form.addEventListener("submit", async function(e){
+
+e.preventDefault();
+
+const formData = new FormData(form);
+
+const response = await fetch("/analyze",{
+method:"POST",
+body:formData
+});
+
+const data = await response.json();
+
+if(data.error){
+alert(data.error);
+return;
+}
+
+document.getElementById("score").textContent = data.match_score;
+
+document.getElementById("wordCount").textContent = data.resume_length;
+
+const matchingList = document.getElementById("matching");
+matchingList.innerHTML = "";
+
+data.matching_keywords.forEach(k=>{
+let li=document.createElement("li");
+li.textContent=k;
+matchingList.appendChild(li);
+});
+
+const missingList = document.getElementById("missing");
+missingList.innerHTML = "";
+
+data.missing_keywords.forEach(k=>{
+let li=document.createElement("li");
+li.textContent=k;
+missingList.appendChild(li);
+});
+
+document.getElementById("resultBox").style.display="block";
+
+});
+
+</script>
+
+</body>
+</html>
