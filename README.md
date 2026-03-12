@@ -1,8 +1,8 @@
-AI Resume Screener is a web application that analyzes a candidate's resume and compares it with a job description to determine how well the resume matches the job requirements.
+🤖 AI Resume Screener is a web application that analyzes a candidate's resume and compares it with a job description to determine how well the resume matches the job requirements.
 
 The system extracts text from resumes (PDF, DOCX, TXT), processes the content using Natural Language Processing (NLP), and calculates a similarity score between the resume and job description.
 
-Features:
+🚀 Features:
 
 • Upload resume files (PDF, DOCX, TXT)
 • Paste resume text manually
@@ -12,7 +12,7 @@ Features:
 • Resume statistics such as word count
 • Clean and responsive web interface
 
-Tech Stack
+🛠 Tech Stack
 
 Backend
 • Python
@@ -44,3 +44,35 @@ ResumeScreener
 │   └── style.css
 │
 └── uploads
+
+⚙️ Installation
+
+1️. Clone the repository
+
+git clone https://github.com/YOUR_USERNAME/ResumeScreener.git
+
+2️. Navigate to the project folder
+
+cd ResumeScreener
+
+3️. Install dependencies
+
+pip install -r requirements.txt
+
+4. Run the application
+
+python app.py
+
+📊 How It Works
+
+User uploads a resume or pastes resume text
+
+User enters the job description
+
+System extracts keywords from both texts
+
+TF-IDF vectorization converts text to numerical representation
+
+Cosine similarity calculates the match score
+
+Matching and missing keywords are displayed
