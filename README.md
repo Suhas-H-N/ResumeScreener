@@ -29,3 +29,18 @@ Frontend
 • HTML
 • CSS
 • JavaScript
+
+📂 Project Structure
+ResumeScreener
+│
+├── app.py
+├── requirements.txt
+├── README.md
+│
+├── templates
+│   └── index.html
+│
+├── static
+│   └── style.css
+│
+└── uploads
