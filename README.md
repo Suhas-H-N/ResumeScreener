@@ -76,3 +76,15 @@ TF-IDF vectorization converts text to numerical representation
 Cosine similarity calculates the match score
 
 Matching and missing keywords are displayed
+
+📈 Future Improvements
+
+• Advanced NLP using spaCy
+• Skill extraction and classification
+• Resume ranking system for multiple candidates
+• ATS-style scoring system
+• Dashboard for recruiters
+
+👨‍💻 Author
+
+Suhas H N
