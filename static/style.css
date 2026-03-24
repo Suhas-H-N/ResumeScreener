@@ -1,0 +1,246 @@
+/* Reset */
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+/* Root Colors */
+:root {
+    --primary: #2563eb;
+    --primary-dark: #1e40af;
+    --bg-gradient: linear-gradient(135deg, #667eea, #764ba2);
+    --text: #1e293b;
+    --light: #f8fafc;
+    --border: #e2e8f0;
+}
+
+/* Body */
+body {
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    background: var(--bg-gradient);
+    min-height: 100vh;
+    padding: 20px;
+}
+
+/* Container */
+.container {
+    max-width: 1100px;
+    margin: auto;
+    background: white;
+    border-radius: 12px;
+    box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+    overflow: hidden;
+}
+
+/* Header */
+header {
+    background: var(--bg-gradient);
+    color: white;
+    text-align: center;
+    padding: 40px 20px;
+}
+
+header h1 {
+    font-size: 2.5rem;
+}
+
+.subtitle {
+    opacity: 0.9;
+    margin-top: 8px;
+}
+
+/* Main */
+main {
+    padding: 30px;
+}
+
+.content-wrapper {
+    display: flex;
+    gap: 30px;
+}
+
+/* Form */
+.form-container {
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+}
+
+.form-label {
+    font-weight: 600;
+    margin-bottom: 5px;
+}
+
+/* File Upload */
+.file-upload-wrapper {
+    position: relative;
+}
+
+.file-input {
+    display: none;
+}
+
+.file-label {
+    border: 2px dashed var(--border);
+    padding: 30px;
+    text-align: center;
+    border-radius: 10px;
+    cursor: pointer;
+    background: var(--light);
+    transition: 0.3s;
+}
+
+.file-label:hover {
+    border-color: var(--primary);
+    background: #eef2ff;
+}
+
+.upload-icon {
+    font-size: 2rem;
+}
+
+.upload-text {
+    display: block;
+    margin-top: 10px;
+    color: #555;
+}
+
+.file-name {
+    margin-top: 10px;
+    color: green;
+}
+
+/* Textarea */
+.textarea {
+    padding: 12px;
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    min-height: 120px;
+}
+
+/* Button */
+.btn {
+    padding: 12px;
+    border-radius: 6px;
+    border: none;
+    cursor: pointer;
+    font-weight: bold;
+}
+
+.btn-primary {
+    background: var(--primary);
+    color: white;
+}
+
+.btn-primary:hover {
+    background: var(--primary-dark);
+}
+
+/* Results */
+.results-section {
+    flex: 1;
+}
+
+/* Score Card */
+.score-card {
+    background: var(--bg-gradient);
+    color: white;
+    padding: 25px;
+    border-radius: 10px;
+    margin-bottom: 20px;
+}
+
+.score-display {
+    display: flex;
+    align-items: center;
+    gap: 20px;
+}
+
+.score-circle {
+    width: 120px;
+    height: 120px;
+    border-radius: 50%;
+    border: 5px solid white;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.score-percentage {
+    font-size: 2rem;
+    font-weight: bold;
+}
+
+/* Analysis */
+.analysis-grid {
+    display: flex;
+    gap: 20px;
+}
+
+.analysis-card {
+    background: var(--light);
+    padding: 20px;
+    border-radius: 10px;
+    flex: 1;
+}
+
+.card-title {
+    margin-bottom: 10px;
+}
+
+/* Keywords */
+.keyword-tag {
+    display: inline-block;
+    padding: 6px 10px;
+    border-radius: 20px;
+    margin: 5px;
+    font-size: 14px;
+}
+
+.matching {
+    background: #d4edda;
+    color: #155724;
+}
+
+.missing {
+    background: #f8d7da;
+    color: #721c24;
+}
+
+/* Stats */
+.stats-card {
+    margin-top: 20px;
+    padding: 15px;
+    background: var(--light);
+    border-radius: 10px;
+}
+
+/* Loader */
+.loader {
+    border: 5px solid #eee;
+    border-top: 5px solid var(--primary);
+    border-radius: 50%;
+    width: 50px;
+    height: 50px;
+    margin: 40px auto;
+    animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+    100% { transform: rotate(360deg); }
+}
+
+/* Footer */
+footer {
+    text-align: center;
+    padding: 15px;
+    background: #f1f5f9;
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+    .content-wrapper {
+        flex-direction: column;
+    }
+}
