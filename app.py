@@ -9,63 +9,77 @@ from sklearn.metrics.pairwise import cosine_similarity
 
 app = Flask(__name__)
 
-# Config
+# -------------------------------
+# Configuration
+# -------------------------------
 UPLOAD_FOLDER = "uploads"
 ALLOWED_EXTENSIONS = {"pdf", "docx", "txt"}
 
 app.config["UPLOAD_FOLDER"] = UPLOAD_FOLDER
-app.config["MAX_CONTENT_LENGTH"] = 16 * 1024 * 1024
+app.config["MAX_CONTENT_LENGTH"] = 16 * 1024 * 1024  # 16MB
 
+# Create uploads folder if not exists
 os.makedirs(UPLOAD_FOLDER, exist_ok=True)
 
 
-# -----------------------------
-# File Validation
-# -----------------------------
+# -------------------------------
+# Helper Functions
+# -------------------------------
+
 def allowed_file(filename):
     return "." in filename and filename.rsplit(".", 1)[1].lower() in ALLOWED_EXTENSIONS
 
 
-# -----------------------------
-# Extract Text Functions
-# -----------------------------
+# Extract text from PDF
 def extract_text_from_pdf(filepath):
     text = ""
-    with open(filepath, "rb") as file:
-        reader = PyPDF2.PdfReader(file)
-        for page in reader.pages:
-            text += page.extract_text() or ""
+    try:
+        with open(filepath, "rb") as file:
+            reader = PyPDF2.PdfReader(file)
+            for page in reader.pages:
+                text += page.extract_text() or ""
+    except:
+        pass
     return text
 
 
+# Extract text from DOCX
 def extract_text_from_docx(filepath):
-    doc = Document(filepath)
-    return "\n".join([p.text for p in doc.paragraphs])
+    try:
+        doc = Document(filepath)
+        return "\n".join([p.text for p in doc.paragraphs])
+    except:
+        return ""
 
 
+# Extract text from any file
 def extract_text(filepath):
     ext = filepath.split(".")[-1].lower()
 
     if ext == "pdf":
         return extract_text_from_pdf(filepath)
+
     elif ext == "docx":
         return extract_text_from_docx(filepath)
+
     elif ext == "txt":
-        with open(filepath, "r", encoding="utf-8") as f:
-            return f.read()
+        try:
+            with open(filepath, "r", encoding="utf-8") as f:
+                return f.read()
+        except:
+            return ""
+
     return ""
 
 
-# -----------------------------
-# Keyword Extraction
-# -----------------------------
+# Extract keywords
 def extract_keywords(text):
     words = re.findall(r"\b[a-zA-Z]{3,}\b", text.lower())
 
     stop_words = {
-        "the","and","for","with","that","this","from","have",
-        "will","your","are","you","was","were","been","into",
-        "their","they","them","about","there","which"
+        "the","and","for","with","that","this","from","have","will",
+        "your","are","you","was","were","been","into","their","they",
+        "them","about","there","which","this","these"
     }
 
     keywords = [w for w in words if w not in stop_words]
@@ -73,15 +87,13 @@ def extract_keywords(text):
     return list(set(keywords))
 
 
-# -----------------------------
-# Match Score Calculation
-# -----------------------------
+# Calculate similarity score
 def calculate_score(resume, job_desc):
 
-    vectorizer = TfidfVectorizer(stop_words="english")
-
     try:
+        vectorizer = TfidfVectorizer(stop_words="english")
         vectors = vectorizer.fit_transform([resume, job_desc])
+
         similarity = cosine_similarity(vectors[0:1], vectors[1:2])[0][0]
         score = round(similarity * 100, 2)
     except:
@@ -96,9 +108,10 @@ def calculate_score(resume, job_desc):
     return score, matching, missing
 
 
-# -----------------------------
+# -------------------------------
 # Routes
-# -----------------------------
+# -------------------------------
+
 @app.route("/")
 def home():
     return render_template("index.html")
@@ -110,7 +123,7 @@ def analyze():
     try:
         resume_text = ""
 
-        # Uploaded file
+        # Handle file upload
         if "resume_file" in request.files:
 
             file = request.files["resume_file"]
@@ -124,23 +137,27 @@ def analyze():
 
                 resume_text = extract_text(filepath)
 
+                # Remove file after processing
                 if os.path.exists(filepath):
                     os.remove(filepath)
 
-        # Pasted resume text
+        # Handle pasted text (future upgrade)
         if request.form.get("resume_text"):
             resume_text = request.form.get("resume_text")
 
         job_desc = request.form.get("job_description", "")
 
+        # Validation
         if not resume_text.strip():
-            return jsonify({"error": "Resume content missing"}), 400
+            return jsonify({"error": "Please upload a resume"}), 400
 
         if not job_desc.strip():
-            return jsonify({"error": "Job description missing"}), 400
+            return jsonify({"error": "Please enter job description"}), 400
 
+        # Calculate score
         score, matching, missing = calculate_score(resume_text, job_desc)
 
+        # Match level
         if score >= 80:
             level = "Excellent"
             color = "green"
@@ -170,5 +187,8 @@ def analyze():
         return jsonify({"error": str(e)}), 500
 
 
+# -------------------------------
+# Run App
+# -------------------------------
 if __name__ == "__main__":
     app.run(debug=True)
