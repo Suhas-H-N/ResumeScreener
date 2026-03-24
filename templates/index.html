@@ -14,90 +14,191 @@
 
 <div class="container">
 
-<header>
-<h1>🤖 AI Resume Screener</h1>
-<p>Upload a resume and compare it with a job description</p>
-</header>
+    <!-- Header -->
+    <header>
+        <h1>🤖 AI Resume Screener</h1>
+        <p class="subtitle">Smart Resume Analysis using NLP & Machine Learning</p>
+    </header>
 
-<main>
+    <!-- Main Content -->
+    <main>
 
-<form id="screeningForm">
+        <div class="content-wrapper">
 
-<label>Upload Resume</label>
-<input type="file" name="resume_file" id="resumeFile" required>
+            <!-- INPUT SECTION -->
+            <div class="input-section">
 
-<label>Job Description</label>
-<textarea name="job_description" id="jobDescription" placeholder="Paste job description here..." required></textarea>
+                <form id="screeningForm" class="form-container">
 
-<button type="submit">Analyze Resume</button>
+                    <!-- Resume Upload -->
+                    <div class="form-group">
+                        <label class="form-label">Upload Resume</label>
 
-</form>
+                        <div class="file-upload-wrapper">
+                            <input type="file" name="resume_file" id="resumeFile" class="file-input" required>
 
-<div id="resultBox" style="display:none">
+                            <label for="resumeFile" class="file-label">
+                                <span class="upload-icon">📄</span>
+                                <span class="upload-text">Click to upload (PDF, DOCX, TXT)</span>
+                            </label>
 
-<h2>Match Score: <span id="score"></span>%</h2>
+                            <div id="fileName" class="file-name"></div>
+                        </div>
+                    </div>
 
-<h3>Matching Keywords</h3>
-<ul id="matching"></ul>
+                    <!-- Job Description -->
+                    <div class="form-group">
+                        <label class="form-label">Job Description</label>
 
-<h3>Missing Keywords</h3>
-<ul id="missing"></ul>
+                        <textarea 
+                            name="job_description" 
+                            id="jobDescription" 
+                            class="textarea"
+                            placeholder="Paste job description here..."
+                            required></textarea>
+                    </div>
 
-<p>Total Resume Words: <span id="wordCount"></span></p>
+                    <!-- Submit -->
+                    <button type="submit" class="btn btn-primary">
+                        🔍 Analyze Resume
+                    </button>
 
-</div>
+                </form>
 
-</main>
+            </div>
+
+            <!-- RESULTS SECTION -->
+            <div class="results-section" id="resultsSection" style="display:none;">
+
+                <div class="results-header">
+                    <h2>📊 Analysis Results</h2>
+                    <button class="btn btn-secondary" onclick="location.reload()">New Analysis</button>
+                </div>
+
+                <!-- Score -->
+                <div class="score-card">
+                    <div class="score-display">
+                        <div class="score-circle" id="scoreCircle">
+                            <div class="score-percentage" id="score">0%</div>
+                        </div>
+
+                        <div class="score-info">
+                            <h3>Match Score</h3>
+                            <p id="matchLevel">Processing...</p>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Keywords -->
+                <div class="analysis-grid">
+
+                    <div class="analysis-card">
+                        <h3 class="card-title">✅ Matching Keywords</h3>
+                        <div id="matchingKeywords" class="keywords-list"></div>
+                    </div>
+
+                    <div class="analysis-card">
+                        <h3 class="card-title">❌ Missing Keywords</h3>
+                        <div id="missingKeywords" class="keywords-list"></div>
+                    </div>
+
+                </div>
+
+                <!-- Stats -->
+                <div class="stats-card">
+                    <h3>📈 Resume Stats</h3>
+                    <p>Total Words: <span id="wordCount">0</span></p>
+                </div>
+
+            </div>
+
+            <!-- Loader -->
+            <div class="loader" id="loader" style="display:none;"></div>
+
+        </div>
+
+    </main>
+
+    <!-- Footer -->
+    <footer>
+        <p>AI Resume Screener | Built by Suhas 🚀</p>
+    </footer>
 
 </div>
 
 <script>
 
+// File name display
+const resumeFile = document.getElementById("resumeFile");
+const fileName = document.getElementById("fileName");
+
+resumeFile.addEventListener("change", () => {
+    fileName.textContent = resumeFile.files[0]?.name || "";
+});
+
+
+// Form submit
 const form = document.getElementById("screeningForm");
+const loader = document.getElementById("loader");
+const resultsSection = document.getElementById("resultsSection");
 
-form.addEventListener("submit", async function(e){
+form.addEventListener("submit", async (e) => {
 
-e.preventDefault();
+    e.preventDefault();
 
-const formData = new FormData(form);
+    loader.style.display = "block";
+    resultsSection.style.display = "none";
 
-const response = await fetch("/analyze",{
-method:"POST",
-body:formData
+    const formData = new FormData(form);
+
+    try {
+
+        const res = await fetch("/analyze", {
+            method: "POST",
+            body: formData
+        });
+
+        const data = await res.json();
+
+        if(data.error){
+            alert(data.error);
+            loader.style.display = "none";
+            return;
+        }
+
+        displayResults(data);
+
+    } catch (err) {
+        alert("Something went wrong");
+    }
+
+    loader.style.display = "none";
 });
 
-const data = await response.json();
 
-if(data.error){
-alert(data.error);
-return;
+// Display Results
+function displayResults(data){
+
+    document.getElementById("score").textContent = data.match_score + "%";
+    document.getElementById("matchLevel").textContent = data.match_level;
+    document.getElementById("wordCount").textContent = data.resume_length;
+
+    // Matching
+    const matchDiv = document.getElementById("matchingKeywords");
+    matchDiv.innerHTML = "";
+    data.matching_keywords.forEach(k=>{
+        matchDiv.innerHTML += `<span class="keyword-tag matching">${k}</span>`;
+    });
+
+    // Missing
+    const missDiv = document.getElementById("missingKeywords");
+    missDiv.innerHTML = "";
+    data.missing_keywords.forEach(k=>{
+        missDiv.innerHTML += `<span class="keyword-tag missing">${k}</span>`;
+    });
+
+    resultsSection.style.display = "block";
 }
-
-document.getElementById("score").textContent = data.match_score;
-
-document.getElementById("wordCount").textContent = data.resume_length;
-
-const matchingList = document.getElementById("matching");
-matchingList.innerHTML = "";
-
-data.matching_keywords.forEach(k=>{
-let li=document.createElement("li");
-li.textContent=k;
-matchingList.appendChild(li);
-});
-
-const missingList = document.getElementById("missing");
-missingList.innerHTML = "";
-
-data.missing_keywords.forEach(k=>{
-let li=document.createElement("li");
-li.textContent=k;
-missingList.appendChild(li);
-});
-
-document.getElementById("resultBox").style.display="block";
-
-});
 
 </script>
 
