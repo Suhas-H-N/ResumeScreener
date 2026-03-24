@@ -107,7 +107,23 @@ def calculate_score(resume, job_desc):
 
     return score, matching, missing
 
+def calculate_ats_score(score, resume_text, missing_keywords):
 
+    ats_score = score
+
+    # Penalize if too many missing skills
+    if len(missing_keywords) > 10:
+        ats_score -= 10
+
+    # Check resume length
+    word_count = len(resume_text.split())
+
+    if word_count < 150:
+        ats_score -= 10
+    elif word_count > 800:
+        ats_score -= 5
+
+    return max(0, min(100, round(ats_score, 2)))
 # -------------------------------
 # Routes
 # -------------------------------
@@ -157,6 +173,8 @@ def analyze():
         # Calculate score
         score, matching, missing = calculate_score(resume_text, job_desc)
 
+        ats_score = calculate_ats_score(score, resume_text, missing)
+
         # Match level
         if score >= 80:
             level = "Excellent"
@@ -172,15 +190,16 @@ def analyze():
             color = "red"
 
         return jsonify({
-            "success": True,
-            "match_score": score,
-            "match_level": level,
-            "color": color,
-            "matching_keywords": matching[:10],
-            "missing_keywords": missing[:10],
-            "matching_count": len(matching),
-            "missing_count": len(missing),
-            "resume_length": len(resume_text.split())
+        "success": True,
+        "match_score": score,
+        "ats_score": ats_score,
+        "match_level": level,
+        "color": color,
+        "matching_keywords": matching[:10],
+        "missing_keywords": missing[:10],
+        "matching_count": len(matching),
+        "missing_count": len(missing),
+        "resume_length": len(resume_text.split())
         })
 
     except Exception as e:
