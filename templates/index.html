@@ -113,6 +113,18 @@
 
             </div>
 
+            let feedback = "";
+
+            if(data.ats_score > 80){
+                feedback = "Excellent resume match!";
+            }else if(data.ats_score > 60){
+                feedback = "Good match, but can improve.";
+            }else{
+                feedback = "Needs improvement. Add more relevant skills.";
+            }
+
+            alert(feedback);
+
             <!-- Loader -->
             <div class="loader" id="loader" style="display:none;"></div>
 
