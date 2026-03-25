@@ -139,43 +139,33 @@ def analyze():
     try:
         resume_text = ""
 
-        # Handle file upload
         if "resume_file" in request.files:
-
             file = request.files["resume_file"]
 
             if file and allowed_file(file.filename):
-
                 filename = secure_filename(file.filename)
                 filepath = os.path.join(app.config["UPLOAD_FOLDER"], filename)
 
                 file.save(filepath)
-
                 resume_text = extract_text(filepath)
 
-                # Remove file after processing
                 if os.path.exists(filepath):
                     os.remove(filepath)
 
-        # Handle pasted text (future upgrade)
         if request.form.get("resume_text"):
             resume_text = request.form.get("resume_text")
 
         job_desc = request.form.get("job_description", "")
 
-        # Validation
         if not resume_text.strip():
             return jsonify({"error": "Please upload a resume"}), 400
 
         if not job_desc.strip():
             return jsonify({"error": "Please enter job description"}), 400
 
-        # Calculate score
         score, matching, missing = calculate_score(resume_text, job_desc)
-
         ats_score = calculate_ats_score(score, resume_text, missing)
 
-        # Match level
         if score >= 80:
             level = "Excellent"
             color = "green"
@@ -190,22 +180,20 @@ def analyze():
             color = "red"
 
         return jsonify({
-        "success": True,
-        "match_score": score,
-        "ats_score": ats_score,
-        "match_level": level,
-        "color": color,
-        "matching_keywords": matching[:10],
-        "missing_keywords": missing[:10],
-        "matching_count": len(matching),
-        "missing_count": len(missing),
-        "resume_length": len(resume_text.split())
+            "success": True,
+            "match_score": score,
+            "ats_score": ats_score,
+            "match_level": level,
+            "color": color,
+            "matching_keywords": matching[:10],
+            "missing_keywords": missing[:10],
+            "matching_count": len(matching),
+            "missing_count": len(missing),
+            "resume_length": len(resume_text.split())
         })
 
-        except Exception as e:
+    except Exception as e:
         return jsonify({"error": str(e)}), 500
-
-
 # -------------------------------
 # Run App
 # -------------------------------
