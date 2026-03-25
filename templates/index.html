@@ -180,7 +180,8 @@ form.addEventListener("submit", async (e) => {
 // Display Results
 function displayResults(data){
 
-    document.getElementById("score").textContent = data.match_score + "%";
+    document.getElementById("score").textContent = data.match_score;
+    document.getElementById("atsScore").textContent = data.ats_score;
     document.getElementById("matchLevel").textContent = data.match_level;
     document.getElementById("wordCount").textContent = data.resume_length;
 

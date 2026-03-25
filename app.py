@@ -202,7 +202,7 @@ def analyze():
         "resume_length": len(resume_text.split())
         })
 
-    except Exception as e:
+        except Exception as e:
         return jsonify({"error": str(e)}), 500
 
 
