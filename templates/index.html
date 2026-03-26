@@ -1,220 +1,470 @@
+
+
+<!DOCTYPE html> <html lang="en"> <head> <meta charset="UTF-8"> <meta name="viewport" content="width=device-width, initial-scale=1.0"> <title>AI Resume Screener</title> <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}"> </head> <body> <div class="container
+
+pasted
+
+
+/* Reset */ * { margin: 0; padding: 0; box-sizing: border-box; } /* Root Colors */ :root { --primary: #2563eb; --primary-dark: #1e40af; --bg-gradient: linear-gradient(135deg, #667eea, #764ba2); --text: #1e293b; --light: #f8fafc; --border: #e2e8f0;
+
+pasted
+
+
+from flask import Flask, render_template, request, jsonify from werkzeug.utils import secure_filename import os import re import PyPDF2 from docx import Document from sklearn.feature_extraction.text import TfidfVectorizer from sklearn.metrics.pairwise import cosine_similarity app = Flask(_
+
+pasted
+
+hi bro 
+I will give you my project code, upgrade my code and re write the code that is more professional after each code give me push commit for github:
+index.html:
+style.css:
+app.py:
+requirements.txt:
+
+flask
+scikit-learn
+python-docx
+PyPDF2
+numpy
+Show more
+6:20 pm
+
+Check available skills
+Check available skills
+Now let me write all the upgraded files:
+
+
+Created 4 files, read a file
+Created 4 files, read a file
+Here's everything upgraded and production-ready. Here's what changed and your commit messages:
+
+📁 File structure
+project/
+├── app.py
+├── requirements.txt
+├── templates/
+│   └── index.html
+└── static/
+    └── style.css
+✅ What was upgraded
+app.py
+
+Proper module-level docstrings and function docstrings throughout
+Type hints on all functions
+pathlib.Path instead of raw os.path strings
+logging module instead of silent except: pass
+Extended stop-words set as a frozenset constant
+Keyword cap raised to 20, scores use float not int
+classify_match() extracted as its own pure function
+try/finally guarantees temp files are always deleted
+index.html
+
+Complete redesign: dark editorial theme with Syne + DM Sans fonts
+Animated SVG score rings (replaces static number display)
+Drag-and-drop file upload support
+Toast error notifications (replaces alert())
+Field shake animation on validation failure
+aria-live, aria-label for accessibility
+Zero JavaScript bugs (duplicate id="score" fixed, rogue JS outside <script> removed)
+style.css
+
+Full dark theme with CSS custom properties (--bg, --accent, etc.)
+Animated ring progress indicators
+Responsive grid (1-col on mobile)
+Smooth micro-interactions on all interactive elements
+🐙 Git commit messages
+bash
+# 1 — backend
+git add app.py requirements.txt
+git commit -m "refactor(backend): production-grade Flask app with type hints, logging, and docstrings"
+
+# 2 — frontend
+git add templates/index.html static/style.css
+git commit -m "redesign(frontend): dark editorial UI with SVG score rings, drag-and-drop, and toast errors"
+
+# 3 — tag it
+git tag -a v2.0.0 -m "ResumeIQ v2.0 — full professional rewrite"
+git push origin main --tags
+App
+PY 
+Index
+Code · HTML 
+Style
+Code · CSS 
+Requirements
+TXT 
+bro give only codes
+
+6:25 pm
+
+
+You are out of free messages until 10:30 PM
+Upgrade
+bro give only codes
+
+Claude is AI and can make mistakes. Please double-check responses.
+Index · HTML
+Copy
+
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-
-<title>AI Resume Screener</title>
-
-<link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
-
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>ResumeIQ — AI Resume Screener</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=DM+Sans:ital,opsz,wght@0,9..40,300;0,9..40,400;0,9..40,500;1,9..40,300&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}" />
 </head>
-
 <body>
-
-<div class="container">
-
-    <!-- Header -->
-    <header>
-        <h1>🤖 AI Resume Screener</h1>
-        <p class="subtitle">Smart Resume Analysis using NLP & Machine Learning</p>
+ 
+  <!-- Background grid -->
+  <div class="bg-grid" aria-hidden="true"></div>
+  <div class="bg-orb orb-1" aria-hidden="true"></div>
+  <div class="bg-orb orb-2" aria-hidden="true"></div>
+ 
+  <div class="app-shell">
+ 
+    <!-- ── HEADER ── -->
+    <header class="site-header">
+      <div class="logo">
+        <span class="logo-mark">R</span>
+        <span class="logo-text">ResumeIQ</span>
+      </div>
+      <p class="tagline">AI-powered resume screening & ATS analysis</p>
     </header>
-
-    <!-- Main Content -->
+ 
+    <!-- ── MAIN ── -->
     <main>
-
-        <div class="content-wrapper">
-
-            <!-- INPUT SECTION -->
-            <div class="input-section">
-
-                <form id="screeningForm" class="form-container">
-
-                    <!-- Resume Upload -->
-                    <div class="form-group">
-                        <label class="form-label">Upload Resume</label>
-
-                        <div class="file-upload-wrapper">
-                            <input type="file" name="resume_file" id="resumeFile" class="file-input" required>
-
-                            <label for="resumeFile" class="file-label">
-                                <span class="upload-icon">📄</span>
-                                <span class="upload-text">Click to upload (PDF, DOCX, TXT)</span>
-                            </label>
-
-                            <div id="fileName" class="file-name"></div>
-                        </div>
-                    </div>
-
-                    <!-- Job Description -->
-                    <div class="form-group">
-                        <label class="form-label">Job Description</label>
-
-                        <textarea 
-                            name="job_description" 
-                            id="jobDescription" 
-                            class="textarea"
-                            placeholder="Paste job description here..."
-                            required></textarea>
-                    </div>
-
-                    <!-- Submit -->
-                    <button type="submit" class="btn btn-primary">
-                        🔍 Analyze Resume
-                    </button>
-
-                </form>
-
+      <div class="layout">
+ 
+        <!-- LEFT: INPUT PANEL -->
+        <section class="panel panel-input" aria-label="Upload & job description">
+ 
+          <div class="panel-header">
+            <span class="step-badge">01</span>
+            <h2>Upload Resume</h2>
+          </div>
+ 
+          <form id="screeningForm" novalidate>
+ 
+            <!-- File upload -->
+            <div class="field-group">
+              <label class="field-label" for="resumeFile">Resume file</label>
+              <div class="upload-zone" id="uploadZone">
+                <input type="file" name="resume_file" id="resumeFile" class="file-input" accept=".pdf,.docx,.txt" />
+                <label for="resumeFile" class="upload-label">
+                  <svg class="upload-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+                    <path d="M12 16V4m0 0L8 8m4-4 4 4" stroke-linecap="round" stroke-linejoin="round"/>
+                    <path d="M3 20h18" stroke-linecap="round"/>
+                    <rect x="3" y="12" width="18" height="9" rx="2" opacity=".15"/>
+                  </svg>
+                  <span class="upload-title">Drop your resume here</span>
+                  <span class="upload-sub">PDF · DOCX · TXT &nbsp;·&nbsp; Max 16 MB</span>
+                </label>
+                <p class="file-name-display" id="fileNameDisplay" hidden></p>
+              </div>
             </div>
-
-            <!-- RESULTS SECTION -->
-            <div class="results-section" id="resultsSection" style="display:none;">
-
-                <div class="results-header">
-                    <h2>📊 Analysis Results</h2>
-                    <button class="btn btn-secondary" onclick="location.reload()">New Analysis</button>
-                </div>
-
-                <!-- Score -->
-                <div class="score-card">
-                    <div class="score-display">
-                        <div class="score-circle" id="scoreCircle">
-                            <div class="score-percentage" id="score">0%</div>
-                        </div>
-
-                        <div class="score-info">
-                            <h3>Match Score: <span id="score"></span>%</h3>
-                            <h3>ATS Score: <span id="atsScore"></span>%</h3>
-                            <p id="matchLevel">Processing...</p>
-                        </div>
-                    </div>
-                </div>
-
-                <!-- Keywords -->
-                <div class="analysis-grid">
-
-                    <div class="analysis-card">
-                        <h3 class="card-title">✅ Matching Keywords</h3>
-                        <div id="matchingKeywords" class="keywords-list"></div>
-                    </div>
-
-                    <div class="analysis-card">
-                        <h3 class="card-title">❌ Missing Keywords</h3>
-                        <div id="missingKeywords" class="keywords-list"></div>
-                    </div>
-
-                </div>
-
-                <!-- Stats -->
-                <div class="stats-card">
-                    <h3>📈 Resume Stats</h3>
-                    <p>Total Words: <span id="wordCount">0</span></p>
-                </div>
-
+ 
+            <!-- Job description -->
+            <div class="field-group">
+              <div class="panel-header" style="margin-top:1.5rem">
+                <span class="step-badge">02</span>
+                <h2>Job Description</h2>
+              </div>
+              <label class="field-label sr-only" for="jobDescription">Job Description</label>
+              <textarea
+                name="job_description"
+                id="jobDescription"
+                class="jd-textarea"
+                placeholder="Paste the full job description here…"
+                rows="7"
+              ></textarea>
             </div>
-
-            let feedback = "";
-
-            if(data.ats_score > 80){
-                feedback = "Excellent resume match!";
-            }else if(data.ats_score > 60){
-                feedback = "Good match, but can improve.";
-            }else{
-                feedback = "Needs improvement. Add more relevant skills.";
-            }
-
-            alert(feedback);
-
-            <!-- Loader -->
-            <div class="loader" id="loader" style="display:none;"></div>
-
-        </div>
-
+ 
+            <!-- Submit -->
+            <button type="submit" class="analyze-btn" id="analyzeBtn">
+              <span class="btn-text">Analyze Resume</span>
+              <span class="btn-icon" aria-hidden="true">→</span>
+            </button>
+ 
+          </form>
+        </section>
+ 
+        <!-- RIGHT: RESULTS PANEL -->
+        <section class="panel panel-results" id="resultsPanel" aria-label="Analysis results" aria-live="polite">
+ 
+          <!-- Empty state -->
+          <div class="empty-state" id="emptyState">
+            <div class="empty-icon" aria-hidden="true">
+              <svg viewBox="0 0 64 64" fill="none">
+                <circle cx="32" cy="32" r="28" stroke="currentColor" stroke-width="1.5" stroke-dasharray="4 4"/>
+                <path d="M22 32h20M32 22v20" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/>
+              </svg>
+            </div>
+            <p>Your results will appear here once you run the analysis.</p>
+          </div>
+ 
+          <!-- Loader -->
+          <div class="loader-wrap" id="loader" hidden aria-label="Analyzing…">
+            <div class="pulse-ring"></div>
+            <p class="loader-text">Analyzing resume…</p>
+          </div>
+ 
+          <!-- Results -->
+          <div id="resultsContent" hidden>
+ 
+            <div class="results-topbar">
+              <h2 class="results-title">Analysis Report</h2>
+              <button class="reset-btn" id="resetBtn" type="button">New Analysis</button>
+            </div>
+ 
+            <!-- Score row -->
+            <div class="scores-row">
+ 
+              <div class="score-tile" id="matchTile">
+                <svg class="score-ring" viewBox="0 0 80 80">
+                  <circle class="ring-bg" cx="40" cy="40" r="34"/>
+                  <circle class="ring-fill" id="matchRingFill" cx="40" cy="40" r="34"
+                    stroke-dasharray="213.6" stroke-dashoffset="213.6"/>
+                </svg>
+                <div class="score-inner">
+                  <span class="score-num" id="matchScore">—</span>
+                  <span class="score-label">Match</span>
+                </div>
+              </div>
+ 
+              <div class="score-tile" id="atsTile">
+                <svg class="score-ring" viewBox="0 0 80 80">
+                  <circle class="ring-bg" cx="40" cy="40" r="34"/>
+                  <circle class="ring-fill" id="atsRingFill" cx="40" cy="40" r="34"
+                    stroke-dasharray="213.6" stroke-dashoffset="213.6"/>
+                </svg>
+                <div class="score-inner">
+                  <span class="score-num" id="atsScore">—</span>
+                  <span class="score-label">ATS</span>
+                </div>
+              </div>
+ 
+              <div class="verdict-tile" id="verdictTile">
+                <span class="verdict-label">Verdict</span>
+                <span class="verdict-value" id="verdictValue">—</span>
+                <span class="verdict-hint" id="verdictHint"></span>
+              </div>
+ 
+            </div>
+ 
+            <!-- Keywords grid -->
+            <div class="kw-grid">
+              <div class="kw-card kw-matching">
+                <h3 class="kw-title">
+                  <span class="kw-dot dot-green"></span>
+                  Matching Keywords
+                  <span class="kw-count" id="matchCount">0</span>
+                </h3>
+                <div class="kw-tags" id="matchingKeywords"></div>
+              </div>
+              <div class="kw-card kw-missing">
+                <h3 class="kw-title">
+                  <span class="kw-dot dot-red"></span>
+                  Missing Keywords
+                  <span class="kw-count" id="missingCount">0</span>
+                </h3>
+                <div class="kw-tags" id="missingKeywords"></div>
+              </div>
+            </div>
+ 
+            <!-- Stats bar -->
+            <div class="stats-bar">
+              <div class="stat">
+                <span class="stat-value" id="wordCount">—</span>
+                <span class="stat-label">Words in Resume</span>
+              </div>
+              <div class="stat">
+                <span class="stat-value" id="matchingTotal">—</span>
+                <span class="stat-label">Keywords Matched</span>
+              </div>
+              <div class="stat">
+                <span class="stat-value" id="missingTotal">—</span>
+                <span class="stat-label">Keywords Missing</span>
+              </div>
+            </div>
+ 
+          </div>
+        </section>
+ 
+      </div>
     </main>
-
-    <!-- Footer -->
-    <footer>
-        <p>AI Resume Screener | Built by Suhas 🚀</p>
+ 
+    <!-- ── FOOTER ── -->
+    <footer class="site-footer">
+      <p>ResumeIQ &nbsp;·&nbsp; Built by <strong>Suhas</strong> 🚀</p>
     </footer>
-
-</div>
-
-<script>
-
-// File name display
-const resumeFile = document.getElementById("resumeFile");
-const fileName = document.getElementById("fileName");
-
-resumeFile.addEventListener("change", () => {
-    fileName.textContent = resumeFile.files[0]?.name || "";
-});
-
-
-// Form submit
-const form = document.getElementById("screeningForm");
-const loader = document.getElementById("loader");
-const resultsSection = document.getElementById("resultsSection");
-
-form.addEventListener("submit", async (e) => {
-
-    e.preventDefault();
-
-    loader.style.display = "block";
-    resultsSection.style.display = "none";
-
-    const formData = new FormData(form);
-
-    try {
-
-        const res = await fetch("/analyze", {
-            method: "POST",
-            body: formData
-        });
-
+ 
+  </div>
+ 
+  <script>
+    // ── DOM refs ──
+    const form        = document.getElementById('screeningForm');
+    const resumeFile  = document.getElementById('resumeFile');
+    const fileDisplay = document.getElementById('fileNameDisplay');
+    const uploadZone  = document.getElementById('uploadZone');
+    const analyzeBtn  = document.getElementById('analyzeBtn');
+    const loader      = document.getElementById('loader');
+    const emptyState  = document.getElementById('emptyState');
+    const resultsContent = document.getElementById('resultsContent');
+    const resetBtn    = document.getElementById('resetBtn');
+ 
+    // ── File name display ──
+    resumeFile.addEventListener('change', () => {
+      const name = resumeFile.files[0]?.name;
+      if (name) {
+        fileDisplay.textContent = '📄 ' + name;
+        fileDisplay.hidden = false;
+        uploadZone.classList.add('has-file');
+      }
+    });
+ 
+    // ── Drag & drop ──
+    ['dragover', 'dragenter'].forEach(evt =>
+      uploadZone.addEventListener(evt, e => { e.preventDefault(); uploadZone.classList.add('drag-over'); })
+    );
+    ['dragleave', 'drop'].forEach(evt =>
+      uploadZone.addEventListener(evt, () => uploadZone.classList.remove('drag-over'))
+    );
+    uploadZone.addEventListener('drop', e => {
+      e.preventDefault();
+      const file = e.dataTransfer?.files[0];
+      if (file) {
+        const dt = new DataTransfer();
+        dt.items.add(file);
+        resumeFile.files = dt.files;
+        fileDisplay.textContent = '📄 ' + file.name;
+        fileDisplay.hidden = false;
+        uploadZone.classList.add('has-file');
+      }
+    });
+ 
+    // ── Form submit ──
+    form.addEventListener('submit', async e => {
+      e.preventDefault();
+ 
+      if (!resumeFile.files[0]) {
+        shakeField(uploadZone, 'Please upload a resume file.');
+        return;
+      }
+      if (!document.getElementById('jobDescription').value.trim()) {
+        shakeField(document.getElementById('jobDescription'), 'Please enter the job description.');
+        return;
+      }
+ 
+      setLoading(true);
+ 
+      const formData = new FormData(form);
+ 
+      try {
+        const res  = await fetch('/analyze', { method: 'POST', body: formData });
         const data = await res.json();
-
-        if(data.error){
-            alert(data.error);
-            loader.style.display = "none";
-            return;
+ 
+        if (data.error) {
+          showError(data.error);
+          return;
         }
-
-        displayResults(data);
-
-    } catch (err) {
-        alert("Something went wrong");
+ 
+        renderResults(data);
+      } catch {
+        showError('Something went wrong. Please try again.');
+      } finally {
+        setLoading(false);
+      }
+    });
+ 
+    // ── Reset ──
+    resetBtn.addEventListener('click', () => {
+      form.reset();
+      fileDisplay.hidden = true;
+      uploadZone.classList.remove('has-file');
+      resultsContent.hidden = true;
+      emptyState.hidden = false;
+    });
+ 
+    // ── Render results ──
+    function renderResults(data) {
+      document.getElementById('matchScore').textContent  = data.match_score + '%';
+      document.getElementById('atsScore').textContent    = data.ats_score + '%';
+      document.getElementById('verdictValue').textContent = data.match_level;
+      document.getElementById('wordCount').textContent   = data.resume_length;
+      document.getElementById('matchingTotal').textContent = data.matching_count;
+      document.getElementById('missingTotal').textContent  = data.missing_count;
+      document.getElementById('matchCount').textContent    = data.matching_keywords.length;
+      document.getElementById('missingCount').textContent  = data.missing_keywords.length;
+ 
+      // Verdict hint
+      const hints = {
+        Excellent: 'Strong candidate — great alignment with the job.',
+        Good:      'Solid match — a few tweaks could seal the deal.',
+        Average:   'Moderate fit — consider adding missing skills.',
+        Low:       'Significant gaps — tailor your resume further.'
+      };
+      document.getElementById('verdictHint').textContent = hints[data.match_level] || '';
+ 
+      // Color class on verdict
+      const vt = document.getElementById('verdictTile');
+      vt.className = 'verdict-tile verdict-' + data.match_level.toLowerCase();
+ 
+      // Score rings
+      animateRing('matchRingFill', data.match_score);
+      animateRing('atsRingFill',   data.ats_score);
+ 
+      // Keywords
+      renderTags('matchingKeywords', data.matching_keywords, 'tag-match');
+      renderTags('missingKeywords',  data.missing_keywords,  'tag-miss');
+ 
+      emptyState.hidden = true;
+      resultsContent.hidden = false;
     }
-
-    loader.style.display = "none";
-});
-
-
-// Display Results
-function displayResults(data){
-
-    document.getElementById("score").textContent = data.match_score;
-    document.getElementById("atsScore").textContent = data.ats_score;
-    document.getElementById("matchLevel").textContent = data.match_level;
-    document.getElementById("wordCount").textContent = data.resume_length;
-
-    // Matching
-    const matchDiv = document.getElementById("matchingKeywords");
-    matchDiv.innerHTML = "";
-    data.matching_keywords.forEach(k=>{
-        matchDiv.innerHTML += `<span class="keyword-tag matching">${k}</span>`;
-    });
-
-    // Missing
-    const missDiv = document.getElementById("missingKeywords");
-    missDiv.innerHTML = "";
-    data.missing_keywords.forEach(k=>{
-        missDiv.innerHTML += `<span class="keyword-tag missing">${k}</span>`;
-    });
-
-    resultsSection.style.display = "block";
-}
-
-</script>
-
+ 
+    function renderTags(id, list, cls) {
+      const el = document.getElementById(id);
+      el.innerHTML = list.length
+        ? list.map(k => `<span class="kw-tag ${cls}">${k}</span>`).join('')
+        : '<span class="kw-empty">None found</span>';
+    }
+ 
+    function animateRing(id, pct) {
+      const circ = 213.6;
+      const el   = document.getElementById(id);
+      el.style.strokeDashoffset = circ;
+      requestAnimationFrame(() => {
+        el.style.transition = 'stroke-dashoffset 1s cubic-bezier(.4,0,.2,1)';
+        el.style.strokeDashoffset = circ - (circ * Math.min(pct, 100)) / 100;
+      });
+    }
+ 
+    function setLoading(on) {
+      analyzeBtn.disabled = on;
+      analyzeBtn.classList.toggle('loading', on);
+      loader.hidden   = !on;
+      emptyState.hidden = on;
+      if (on) resultsContent.hidden = true;
+    }
+ 
+    function showError(msg) {
+      const el = document.createElement('div');
+      el.className = 'toast-error';
+      el.textContent = msg;
+      document.body.append(el);
+      setTimeout(() => el.remove(), 4000);
+    }
+ 
+    function shakeField(el, msg) {
+      el.classList.add('field-error');
+      el.addEventListener('animationend', () => el.classList.remove('field-error'), { once: true });
+      showError(msg);
+    }
+  </script>
+ 
 </body>
 </html>
+ 
