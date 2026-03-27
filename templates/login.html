@@ -1,40 +1,92 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <title>Login - ResumeIQ</title>
-    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+  <meta charset="UTF-8">
+  <title>Login — ResumeIQ</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+  <!-- Fonts -->
+  <link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;700;800&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet">
+
+  <!-- CSS -->
+  <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
 </head>
+
 <body>
 
-<div class="auth-page">
-    <h2>🔐 Login</h2>
+<div class="app-shell">
 
-    <input type="email" id="email" placeholder="Enter email">
-    <input type="password" id="password" placeholder="Enter password">
+  <!-- HEADER -->
+  <header class="site-header">
+    <div class="logo">
+      <span class="logo-mark">R</span>
+      <span class="logo-text">ResumeIQ</span>
+    </div>
+
+    <a href="/" class="btn btn-secondary">← Back</a>
+  </header>
+
+  <!-- LOGIN CARD -->
+  <div class="auth-page">
+
+    <h2>🔐 Welcome Back</h2>
+    <p style="color: var(--text-secondary); font-size: 14px;">
+      Login to continue your resume analysis
+    </p>
+
+    <input type="email" id="email" placeholder="Enter your email" required>
+    <input type="password" id="password" placeholder="Enter your password" required>
 
     <button onclick="login()" class="btn btn-primary">Login</button>
 
-    <p>Don't have an account? <a href="/signup-page">Signup</a></p>
+    <p style="font-size: 14px;">
+      Don’t have an account?
+      <a href="/signup-page" style="color: var(--accent);">Sign up</a>
+    </p>
+
+  </div>
+
 </div>
 
+<!-- SCRIPT -->
 <script>
-async function login(){
-    const email = document.getElementById("email").value;
-    const password = document.getElementById("password").value;
 
+async function login() {
+  const email = document.getElementById("email").value.trim();
+  const password = document.getElementById("password").value.trim();
+
+  if (!email || !password) {
+    alert("Please fill all fields");
+    return;
+  }
+
+  try {
     const res = await fetch("/login", {
-        method: "POST",
-        headers: {"Content-Type":"application/json"},
-        body: JSON.stringify({email, password})
+      method: "POST",
+      headers: {"Content-Type": "application/json"},
+      body: JSON.stringify({ email, password })
     });
 
     const data = await res.json();
-    alert(data.message || data.error);
 
-    if(res.ok){
-        window.location.href = "/";
+    if (!res.ok) {
+      alert(data.error || "Login failed");
+      return;
     }
+
+    // Save user (for welcome message)
+    localStorage.setItem("user", data.user);
+
+    alert("Login successful!");
+
+    // Redirect
+    window.location.href = "/";
+
+  } catch (err) {
+    alert("Something went wrong");
+  }
 }
+
 </script>
 
 </body>
