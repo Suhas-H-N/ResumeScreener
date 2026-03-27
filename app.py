@@ -188,7 +188,7 @@ def classify_match(score: float) -> str:
         return "Average"
     return "Low"
  
- USER_DB = "users.json"
+USER_DB = "users.json"
 
 def load_users():
     if not os.path.exists(USER_DB):
@@ -211,11 +211,15 @@ def signup():
 
     email = data.get("email")
     password = data.get("password")
+    name = data.get("name")
+
+    if not name:
+        return jsonify({"error": "Name is required"}), 400
 
     if email in users:
         return jsonify({"error": "User already exists"}), 400
 
-    users[email] = generate_password_hash(password)
+    users[email] = {"password": generate_password_hash(password), "name": name}
     save_users(users)
 
     return jsonify({"message": "Signup successful"})
@@ -232,7 +236,7 @@ def login():
     if email not in users:
         return jsonify({"error": "User not found"}), 404
 
-    if not check_password_hash(users[email], password):
+    if not check_password_hash(users[email]["password"], password):
         return jsonify({"error": "Incorrect password"}), 401
 
     return jsonify({"message": "Login successful"})

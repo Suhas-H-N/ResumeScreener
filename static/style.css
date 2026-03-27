@@ -98,8 +98,19 @@ body {
   margin-bottom: 40px;
   display: flex;
   align-items: baseline;
+  justify-content: space-between;
   gap: 24px;
   flex-wrap: wrap;
+}
+.header-right {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 8px;
+}
+.auth-buttons {
+  display: flex;
+  gap: 12px;
 }
 .logo {
   display: flex;
@@ -627,4 +638,34 @@ body {
 
 .auth-buttons button {
     flex: 1;
+}
+
+/* Login Container Fix */
+.auth-box {
+    max-width: 500px;
+    margin: 40px auto;
+    padding: 25px;
+
+    background: var(--surface);
+    border-radius: 12px;
+    border: 1px solid var(--border);
+
+    display: flex;
+    flex-direction: column;
+    gap: 15px;
+
+    box-shadow: 0 8px 25px rgba(0,0,0,0.3);
+}
+
+/* Inputs Fix */
+.auth-box input {
+    width: 100%;
+    padding: 12px;
+    border-radius: 8px;
+    border: 1px solid var(--border);
+}
+
+/* Button Fix */
+.auth-box button {
+    width: 100%;
 }

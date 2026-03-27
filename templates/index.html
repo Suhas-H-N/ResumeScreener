@@ -26,21 +26,27 @@
         <span class="logo-mark">R</span>
         <span class="logo-text">ResumeIQ</span>
       </div>
-      <p class="tagline">AI-powered resume screening & ATS analysis</p>
+      <div class="header-right">
+        <p class="tagline">AI-powered resume screening & ATS analysis</p>
+        <div class="auth-buttons">
+          <button id="loginBtn" class="btn btn-secondary">Login</button>
+          <button id="signupBtn" class="btn btn-primary">Signup</button>
+        </div>
+      </div>
     </header>
  
     <!-- ── MAIN ── -->
     <main>
-      <div class="auth-box">
+      <div class="auth-box" id="authBox" hidden>
 
-    <h3>🔐 Login / Signup</h3>
+    <h3 id="authTitle">🔐 Login</h3>
 
+    <input type="text" id="name" placeholder="Enter name" style="display:none;">
     <input type="email" id="email" placeholder="Enter email" required>
     <input type="password" id="password" placeholder="Enter password" required>
 
     <div class="auth-buttons">
-        <button onclick="signup()" class="btn btn-secondary">Signup</button>
-        <button onclick="login()" class="btn btn-primary">Login</button>
+        <button id="authSubmitBtn" onclick="submitAuth()" class="btn btn-primary">Login</button>
     </div>
 
 </div>
@@ -225,10 +231,11 @@
   <script>
 
     async function signup() {
+    const name = document.getElementById("name").value;
     const email = document.getElementById("email").value;
     const password = document.getElementById("password").value;
 
-    if (!email || !password) {
+    if (!name || !email || !password) {
         alert("Please fill all fields");
         return;
     }
@@ -236,11 +243,14 @@
     const res = await fetch("/signup", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ email, password })
+        body: JSON.stringify({ name, email, password })
     });
 
     const data = await res.json();
     alert(data.message || data.error);
+    if (data.message) {
+        document.getElementById("authBox").hidden = true;
+    }
 }
 
 async function login() {
@@ -260,7 +270,33 @@ async function login() {
 
     const data = await res.json();
     alert(data.message || data.error);
+    if (data.message) {
+        document.getElementById("authBox").hidden = true;
+    }
 }
+
+function submitAuth() {
+    const title = document.getElementById("authTitle").textContent;
+    if (title.includes("Login")) {
+        login();
+    } else {
+        signup();
+    }
+}
+
+document.getElementById("loginBtn").addEventListener("click", () => {
+    document.getElementById("authBox").hidden = false;
+    document.getElementById("name").style.display = "none";
+    document.getElementById("authTitle").textContent = "🔐 Login";
+    document.getElementById("authSubmitBtn").textContent = "Login";
+});
+
+document.getElementById("signupBtn").addEventListener("click", () => {
+    document.getElementById("authBox").hidden = false;
+    document.getElementById("name").style.display = "block";
+    document.getElementById("authTitle").textContent = "🔐 Signup";
+    document.getElementById("authSubmitBtn").textContent = "Signup";
+});
     const themeToggle = document.getElementById("themeToggle");
 
 // Load saved theme
