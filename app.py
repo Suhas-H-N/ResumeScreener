@@ -203,7 +203,14 @@ def save_users(users):
 # ─────────────────────────────────────────────
 # Routes
 # ─────────────────────────────────────────────
- 
+ @app.route("/login-page")
+def login_page():
+    return render_template("login.html")
+
+@app.route("/signup-page")
+def signup_page():
+    return render_template("signup.html")
+
 @app.route("/signup", methods=["POST"])
 def signup():
     data = request.json
