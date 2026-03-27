@@ -31,6 +31,19 @@
  
     <!-- ── MAIN ── -->
     <main>
+      <div class="auth-box">
+
+    <h3>🔐 Login / Signup</h3>
+
+    <input type="email" id="email" placeholder="Enter email" required>
+    <input type="password" id="password" placeholder="Enter password" required>
+
+    <div class="auth-buttons">
+        <button onclick="signup()" class="btn btn-secondary">Signup</button>
+        <button onclick="login()" class="btn btn-primary">Login</button>
+    </div>
+
+</div>
       <div class="layout">
  
         <!-- LEFT: INPUT PANEL -->
@@ -60,7 +73,19 @@
                 <p class="file-name-display" id="fileNameDisplay" hidden></p>
               </div>
             </div>
- 
+
+            <!-- Resume text (alternative) -->
+            <div class="field-group">
+              <label class="field-label" for="resumeText">Or paste resume text</label>
+              <textarea
+                name="resume_text"
+                id="resumeText"
+                class="jd-textarea"
+                placeholder="Paste your resume text here as an alternative to uploading a file…"
+                rows="4"
+              ></textarea>
+            </div>
+
             <!-- Job description -->
             <div class="field-group">
               <div class="panel-header" style="margin-top:1.5rem">
@@ -116,7 +141,6 @@
  
             <!-- Score row -->
             <div class="scores-row">
- 
               <div class="score-tile" id="matchTile">
                 <svg class="score-ring" viewBox="0 0 80 80">
                   <circle class="ring-bg" cx="40" cy="40" r="34"/>
@@ -199,6 +223,44 @@
   </div>
  
   <script>
+
+    async function signup() {
+    const email = document.getElementById("email").value;
+    const password = document.getElementById("password").value;
+
+    if (!email || !password) {
+        alert("Please fill all fields");
+        return;
+    }
+
+    const res = await fetch("/signup", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ email, password })
+    });
+
+    const data = await res.json();
+    alert(data.message || data.error);
+}
+
+async function login() {
+    const email = document.getElementById("email").value;
+    const password = document.getElementById("password").value;
+
+    if (!email || !password) {
+        alert("Please fill all fields");
+        return;
+    }
+
+    const res = await fetch("/login", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ email, password })
+    });
+
+    const data = await res.json();
+    alert(data.message || data.error);
+}
     const themeToggle = document.getElementById("themeToggle");
 
 // Load saved theme
@@ -264,8 +326,8 @@ themeToggle.addEventListener("click", () => {
     form.addEventListener('submit', async e => {
       e.preventDefault();
  
-      if (!resumeFile.files[0]) {
-        shakeField(uploadZone, 'Please upload a resume file.');
+      if (!resumeFile.files[0] && !document.getElementById('resumeText').value.trim()) {
+        shakeField(uploadZone, 'Please upload a resume file or paste resume text.');
         return;
       }
       if (!document.getElementById('jobDescription').value.trim()) {

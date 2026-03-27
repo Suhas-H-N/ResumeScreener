@@ -597,3 +597,34 @@ body {
 .theme-toggle:hover {
   border-color: var(--accent);
 }
+
+.auth-box {
+    margin-bottom: 25px;
+    padding: 20px;
+    background: var(--surface-alt);
+    border-radius: 12px;
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    border: 1px solid var(--border);
+}
+
+.auth-box h3 {
+    text-align: center;
+}
+
+.auth-box input {
+    padding: 10px;
+    border-radius: 6px;
+    border: 1px solid var(--border);
+    font-size: 14px;
+}
+
+.auth-buttons {
+    display: flex;
+    gap: 10px;
+}
+
+.auth-buttons button {
+    flex: 1;
+}
