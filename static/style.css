@@ -669,3 +669,9 @@ body {
 .auth-box button {
     width: 100%;
 }
+
+.auth-box input:focus {
+    outline: none;
+    border-color: #6366f1;
+    box-shadow: 0 0 8px rgba(99,102,241,0.5);
+}
