@@ -2,480 +2,235 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <title>ResumeIQ — AI Resume Screener</title>
-  <link rel="preconnect" href="https://fonts.googleapis.com" />
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-  <link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=DM+Sans:ital,opsz,wght@0,9..40,300;0,9..40,400;0,9..40,500;1,9..40,300&display=swap" rel="stylesheet" />
-  <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}" />
+
+  <!-- Fonts -->
+  <link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;700;800&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet">
+
+  <!-- CSS -->
+  <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
 </head>
+
 <body>
- 
-  <!-- Background grid -->
-  <div class="bg-grid" aria-hidden="true"></div>
-  <div class="bg-orb orb-1" aria-hidden="true"></div>
-  <div class="bg-orb orb-2" aria-hidden="true"></div>
- 
-  <div class="app-shell">
- 
-    <!-- ── HEADER ── -->
-    <header class="site-header">
-      <div class="logo">
-        <button id="themeToggle" class="theme-toggle" title="Toggle theme">  🌙
-        </button>
-        <span class="logo-mark">R</span>
-        <span class="logo-text">ResumeIQ</span>
-      </div>
-      <div class="header-right">
-        <p class="tagline">AI-powered resume screening & ATS analysis</p>
-        <div class="auth-buttons">
-          <a href="/login-page" class="btn btn-secondary">Login</a>
-          <a href="/signup-page" class="btn btn-primary">Signup</a>
-        </div>
-      </div>
-    </header>
- 
-    <!-- ── MAIN ── -->
-    <main>
-      <div class="auth-box" id="authBox" hidden>
 
-    <h3 style="text-align:center;">🔐 Login</h3>
+<!-- Background -->
+<div class="bg-grid"></div>
+<div class="bg-orb orb-1"></div>
+<div class="bg-orb orb-2"></div>
 
-    <input type="text" id="name" placeholder="Enter name" style="display:none;">
-    <input type="email" id="email" placeholder="Enter email" required>
-    <input type="password" id="password" placeholder="Enter password" required>
+<div class="app-shell">
 
-    <div class="auth-buttons">
-        <button id="authSubmitBtn" onclick="submitAuth()" class="btn btn-primary">Login</button>
+  <!-- HEADER -->
+  <header class="site-header">
+    <div class="logo">
+      <span class="logo-mark">R</span>
+      <span class="logo-text">ResumeIQ</span>
     </div>
 
-</div>
-      <div class="layout">
- 
-        <!-- LEFT: INPUT PANEL -->
-        <section class="panel panel-input" aria-label="Upload & job description">
- 
-          <div class="panel-header">
-            <span class="step-badge">01</span>
-            <h2>Upload Resume</h2>
-          </div>
- 
-          <form id="screeningForm" novalidate>
- 
-            <!-- File upload -->
-            <div class="field-group">
-              <label class="field-label" for="resumeFile">Resume file</label>
-              <div class="upload-zone" id="uploadZone">
-                <input type="file" name="resume_file" id="resumeFile" class="file-input" accept=".pdf,.docx,.txt" />
-                <label for="resumeFile" class="upload-label">
-                  <svg class="upload-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
-                    <path d="M12 16V4m0 0L8 8m4-4 4 4" stroke-linecap="round" stroke-linejoin="round"/>
-                    <path d="M3 20h18" stroke-linecap="round"/>
-                    <rect x="3" y="12" width="18" height="9" rx="2" opacity=".15"/>
-                  </svg>
-                  <span class="upload-title">Drop your resume here</span>
-                  <span class="upload-sub">PDF · DOCX · TXT &nbsp;·&nbsp; Max 16 MB</span>
-                </label>
-                <p class="file-name-display" id="fileNameDisplay" hidden></p>
-              </div>
-            </div>
+    <div class="header-right">
+      <p class="tagline">AI-powered resume screening & ATS analysis</p>
 
-            <!-- Resume text (alternative) -->
-            <div class="field-group">
-              <label class="field-label" for="resumeText">Or paste resume text</label>
-              <textarea
-                name="resume_text"
-                id="resumeText"
-                class="jd-textarea"
-                placeholder="Paste your resume text here as an alternative to uploading a file…"
-                rows="4"
-              ></textarea>
-            </div>
-
-            <!-- Job description -->
-            <div class="field-group">
-              <div class="panel-header" style="margin-top:1.5rem">
-                <span class="step-badge">02</span>
-                <h2>Job Description</h2>
-              </div>
-              <label class="field-label sr-only" for="jobDescription">Job Description</label>
-              <textarea
-                name="job_description"
-                id="jobDescription"
-                class="jd-textarea"
-                placeholder="Paste the full job description here…"
-                rows="7"
-              ></textarea>
-            </div>
- 
-            <!-- Submit -->
-            <button type="submit" class="analyze-btn" id="analyzeBtn">
-              <span class="btn-text">Analyze Resume</span>
-              <span class="btn-icon" aria-hidden="true">→</span>
-            </button>
- 
-          </form>
-        </section>
- 
-        <!-- RIGHT: RESULTS PANEL -->
-        <section class="panel panel-results" id="resultsPanel" aria-label="Analysis results" aria-live="polite">
- 
-          <!-- Empty state -->
-          <div class="empty-state" id="emptyState">
-            <div class="empty-icon" aria-hidden="true">
-              <svg viewBox="0 0 64 64" fill="none">
-                <circle cx="32" cy="32" r="28" stroke="currentColor" stroke-width="1.5" stroke-dasharray="4 4"/>
-                <path d="M22 32h20M32 22v20" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/>
-              </svg>
-            </div>
-            <p>Your results will appear here once you run the analysis.</p>
-          </div>
- 
-          <!-- Loader -->
-          <div class="loader-wrap" id="loader" hidden aria-label="Analyzing…">
-            <div class="pulse-ring"></div>
-            <p class="loader-text">Analyzing resume…</p>
-          </div>
- 
-          <!-- Results -->
-          <div id="resultsContent" hidden>
- 
-            <div class="results-topbar">
-              <h2 class="results-title">Analysis Report</h2>
-              <button class="reset-btn" id="resetBtn" type="button">New Analysis</button>
-            </div>
- 
-            <!-- Score row -->
-            <div class="scores-row">
-              <div class="score-tile" id="matchTile">
-                <svg class="score-ring" viewBox="0 0 80 80">
-                  <circle class="ring-bg" cx="40" cy="40" r="34"/>
-                  <circle class="ring-fill" id="matchRingFill" cx="40" cy="40" r="34"
-                    stroke-dasharray="213.6" stroke-dashoffset="213.6"/>
-                </svg>
-                <div class="score-inner">
-                  <span class="score-num" id="matchScore">—</span>
-                  <span class="score-label">Match</span>
-                </div>
-              </div>
- 
-              <div class="score-tile" id="atsTile">
-                <svg class="score-ring" viewBox="0 0 80 80">
-                  <circle class="ring-bg" cx="40" cy="40" r="34"/>
-                  <circle class="ring-fill" id="atsRingFill" cx="40" cy="40" r="34"
-                    stroke-dasharray="213.6" stroke-dashoffset="213.6"/>
-                </svg>
-                <div class="score-inner">
-                  <span class="score-num" id="atsScore">—</span>
-                  <span class="score-label">ATS</span>
-                </div>
-              </div>
- 
-              <div class="verdict-tile" id="verdictTile">
-                <span class="verdict-label">Verdict</span>
-                <span class="verdict-value" id="verdictValue">—</span>
-                <span class="verdict-hint" id="verdictHint"></span>
-              </div>
- 
-            </div>
- 
-            <!-- Keywords grid -->
-            <div class="kw-grid">
-              <div class="kw-card kw-matching">
-                <h3 class="kw-title">
-                  <span class="kw-dot dot-green"></span>
-                  Matching Keywords
-                  <span class="kw-count" id="matchCount">0</span>
-                </h3>
-                <div class="kw-tags" id="matchingKeywords"></div>
-              </div>
-              <div class="kw-card kw-missing">
-                <h3 class="kw-title">
-                  <span class="kw-dot dot-red"></span>
-                  Missing Keywords
-                  <span class="kw-count" id="missingCount">0</span>
-                </h3>
-                <div class="kw-tags" id="missingKeywords"></div>
-              </div>
-            </div>
- 
-            <!-- Stats bar -->
-            <div class="stats-bar">
-              <div class="stat">
-                <span class="stat-value" id="wordCount">—</span>
-                <span class="stat-label">Words in Resume</span>
-              </div>
-              <div class="stat">
-                <span class="stat-value" id="matchingTotal">—</span>
-                <span class="stat-label">Keywords Matched</span>
-              </div>
-              <div class="stat">
-                <span class="stat-value" id="missingTotal">—</span>
-                <span class="stat-label">Keywords Missing</span>
-              </div>
-            </div>
- 
-          </div>
-        </section>
- 
+      <div class="auth-buttons">
+        <span id="welcomeUser"></span>
+        <a href="/login-page" class="btn btn-secondary">Login</a>
+        <a href="/signup-page" class="btn btn-primary">Get Started</a>
       </div>
-    </main>
- 
-    <!-- ── FOOTER ── -->
-    <footer class="site-footer">
-      <p>ResumeIQ &nbsp;·&nbsp; Built by <strong>Suhas</strong> 🚀</p>
-    </footer>
- 
-  </div>
- 
-  <script>
 
-    async function signup() {
-    const name = document.getElementById("name").value;
-    const email = document.getElementById("email").value;
-    const password = document.getElementById("password").value;
+      <button id="themeToggle" class="theme-toggle">🌙</button>
+    </div>
+  </header>
 
-    if (!name || !email || !password) {
-        alert("Please fill all fields");
-        return;
-    }
+  <!-- MAIN -->
+  <main>
+    <div class="layout">
 
-    const res = await fetch("/signup", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ name, email, password })
-    });
+      <!-- LEFT PANEL -->
+      <section class="panel panel-input">
 
-    const data = await res.json();
-    alert(data.message || data.error);
-    if (data.message) {
-        document.getElementById("authBox").hidden = true;
-    }
-}
+        <div class="panel-header">
+          <span class="step-badge">01</span>
+          <h2>Upload Resume</h2>
+        </div>
 
-async function login() {
-    const email = document.getElementById("email").value;
-    const password = document.getElementById("password").value;
+        <form id="screeningForm">
 
-    if (!email || !password) {
-        alert("Please fill all fields");
-        return;
-    }
+          <!-- Upload -->
+          <div class="field-group">
+            <label class="field-label">Resume File</label>
 
-    const res = await fetch("/login", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ email, password })
-    });
+            <div class="upload-zone" id="uploadZone">
+              <input type="file" id="resumeFile" name="resume_file" class="file-input" accept=".pdf,.docx,.txt">
 
-    const data = await res.json();
-    alert(data.message || data.error);
-    if (data.message) {
-        document.getElementById("authBox").hidden = true;
-    }
-}
+              <label for="resumeFile" class="upload-label">
+                <span class="upload-title">Drop your resume here</span>
+                <span class="upload-sub">PDF · DOCX · TXT</span>
+              </label>
 
-function submitAuth() {
-    const title = document.getElementById("authTitle").textContent;
-    if (title.includes("Login")) {
-        login();
-    } else {
-        signup();
-    }
-}
+              <p id="fileNameDisplay" hidden></p>
+            </div>
+          </div>
 
-document.getElementById("loginBtn").addEventListener("click", () => {
-    document.getElementById("authBox").hidden = false;
-    document.getElementById("name").style.display = "none";
-    document.getElementById("authTitle").textContent = "🔐 Login";
-    document.getElementById("authSubmitBtn").textContent = "Login";
-});
+          <!-- Paste -->
+          <div class="field-group">
+            <label class="field-label">Or Paste Resume</label>
+            <textarea id="resumeText" name="resume_text" class="jd-textarea" placeholder="Paste resume..."></textarea>
+          </div>
 
-document.getElementById("signupBtn").addEventListener("click", () => {
-    document.getElementById("authBox").hidden = false;
-    document.getElementById("name").style.display = "block";
-    document.getElementById("authTitle").textContent = "🔐 Signup";
-    document.getElementById("authSubmitBtn").textContent = "Signup";
-});
-    const themeToggle = document.getElementById("themeToggle");
+          <!-- Job Description -->
+          <div class="field-group">
+            <div class="panel-header">
+              <span class="step-badge">02</span>
+              <h2>Job Description</h2>
+            </div>
 
-// Load saved theme
-if(localStorage.getItem("theme") === "light"){
+            <textarea id="jobDescription" name="job_description" class="jd-textarea" placeholder="Paste job description..."></textarea>
+          </div>
+
+          <!-- Submit -->
+          <button type="submit" class="analyze-btn" id="analyzeBtn">
+            Analyze Resume →
+          </button>
+
+        </form>
+      </section>
+
+      <!-- RIGHT PANEL -->
+      <section class="panel panel-results">
+
+        <!-- Empty -->
+        <div id="emptyState" class="empty-state">
+          <p>Results will appear here</p>
+        </div>
+
+        <!-- Loader -->
+        <div id="loader" class="loader-wrap" hidden>
+          <div class="pulse-ring"></div>
+          <p>Analyzing...</p>
+        </div>
+
+        <!-- Results -->
+        <div id="resultsContent" hidden>
+
+          <h2>Analysis Report</h2>
+
+          <!-- Scores -->
+          <div class="scores-row">
+
+            <div class="score-tile">
+              <h3>Match</h3>
+              <span id="matchScore">0%</span>
+            </div>
+
+            <div class="score-tile">
+              <h3>ATS</h3>
+              <span id="atsScore">0%</span>
+            </div>
+
+            <div class="score-tile">
+              <h3>Level</h3>
+              <span id="matchLevel">-</span>
+            </div>
+
+          </div>
+
+          <!-- Keywords -->
+          <div class="kw-grid">
+            <div>
+              <h4>Matching</h4>
+              <div id="matchingKeywords"></div>
+            </div>
+
+            <div>
+              <h4>Missing</h4>
+              <div id="missingKeywords"></div>
+            </div>
+          </div>
+
+        </div>
+
+      </section>
+
+    </div>
+  </main>
+
+  <!-- FOOTER -->
+  <footer class="site-footer">
+    <p>Built by Suhas 🚀</p>
+  </footer>
+
+</div>
+
+<!-- JS -->
+<script>
+
+const form = document.getElementById("screeningForm");
+const loader = document.getElementById("loader");
+const results = document.getElementById("resultsContent");
+const empty = document.getElementById("emptyState");
+
+// Theme
+const toggle = document.getElementById("themeToggle");
+
+if(localStorage.getItem("theme")==="light"){
   document.body.classList.add("light");
-  themeToggle.textContent = "☀️";
 }
 
-// Toggle theme
-themeToggle.addEventListener("click", () => {
+toggle.onclick = () => {
   document.body.classList.toggle("light");
+  localStorage.setItem("theme", document.body.classList.contains("light") ? "light" : "dark");
+};
 
-  if(document.body.classList.contains("light")){
-    localStorage.setItem("theme", "light");
-    themeToggle.textContent = "☀️";
-  } else {
-    localStorage.setItem("theme", "dark");
-    themeToggle.textContent = "🌙";
-  }
+// Welcome user
+const user = localStorage.getItem("user");
+if(user){
+  document.getElementById("welcomeUser").textContent = "Welcome, " + user;
+}
+
+// File display
+document.getElementById("resumeFile").addEventListener("change", e=>{
+  document.getElementById("fileNameDisplay").textContent = e.target.files[0]?.name;
 });
-    // ── DOM refs ──
-    const form        = document.getElementById('screeningForm');
-    const resumeFile  = document.getElementById('resumeFile');
-    const fileDisplay = document.getElementById('fileNameDisplay');
-    const uploadZone  = document.getElementById('uploadZone');
-    const analyzeBtn  = document.getElementById('analyzeBtn');
-    const loader      = document.getElementById('loader');
-    const emptyState  = document.getElementById('emptyState');
-    const resultsContent = document.getElementById('resultsContent');
-    const resetBtn    = document.getElementById('resetBtn');
- 
-    // ── File name display ──
-    resumeFile.addEventListener('change', () => {
-      const name = resumeFile.files[0]?.name;
-      if (name) {
-        fileDisplay.textContent = '📄 ' + name;
-        fileDisplay.hidden = false;
-        uploadZone.classList.add('has-file');
-      }
-    });
- 
-    // ── Drag & drop ──
-    ['dragover', 'dragenter'].forEach(evt =>
-      uploadZone.addEventListener(evt, e => { e.preventDefault(); uploadZone.classList.add('drag-over'); })
-    );
-    ['dragleave', 'drop'].forEach(evt =>
-      uploadZone.addEventListener(evt, () => uploadZone.classList.remove('drag-over'))
-    );
-    uploadZone.addEventListener('drop', e => {
-      e.preventDefault();
-      const file = e.dataTransfer?.files[0];
-      if (file) {
-        const dt = new DataTransfer();
-        dt.items.add(file);
-        resumeFile.files = dt.files;
-        fileDisplay.textContent = '📄 ' + file.name;
-        fileDisplay.hidden = false;
-        uploadZone.classList.add('has-file');
-      }
-    });
- 
-    // ── Form submit ──
-    form.addEventListener('submit', async e => {
-      e.preventDefault();
- 
-      if (!resumeFile.files[0] && !document.getElementById('resumeText').value.trim()) {
-        shakeField(uploadZone, 'Please upload a resume file or paste resume text.');
-        return;
-      }
-      if (!document.getElementById('jobDescription').value.trim()) {
-        shakeField(document.getElementById('jobDescription'), 'Please enter the job description.');
-        return;
-      }
- 
-      setLoading(true);
- 
-      const formData = new FormData(form);
- 
-      try {
-        const res  = await fetch('/analyze', { method: 'POST', body: formData });
-        const data = await res.json();
- 
-        if (data.error) {
-          showError(data.error);
-          return;
-        }
- 
-        renderResults(data);
-      } catch {
-        showError('Something went wrong. Please try again.');
-      } finally {
-        setLoading(false);
-      }
-    });
- 
-    // ── Reset ──
-    resetBtn.addEventListener('click', () => {
-      form.reset();
-      fileDisplay.hidden = true;
-      uploadZone.classList.remove('has-file');
-      resultsContent.hidden = true;
-      emptyState.hidden = false;
-    });
- 
-    // ── Render results ──
-    function renderResults(data) {
-      document.getElementById('matchScore').textContent  = data.match_score + '%';
-      document.getElementById('atsScore').textContent    = data.ats_score + '%';
-      document.getElementById('verdictValue').textContent = data.match_level;
-      document.getElementById('wordCount').textContent   = data.resume_length;
-      document.getElementById('matchingTotal').textContent = data.matching_count;
-      document.getElementById('missingTotal').textContent  = data.missing_count;
-      document.getElementById('matchCount').textContent    = data.matching_keywords.length;
-      document.getElementById('missingCount').textContent  = data.missing_keywords.length;
- 
-      // Verdict hint
-      const hints = {
-        Excellent: 'Strong candidate — great alignment with the job.',
-        Good:      'Solid match — a few tweaks could seal the deal.',
-        Average:   'Moderate fit — consider adding missing skills.',
-        Low:       'Significant gaps — tailor your resume further.'
-      };
-      document.getElementById('verdictHint').textContent = hints[data.match_level] || '';
- 
-      // Color class on verdict
-      const vt = document.getElementById('verdictTile');
-      vt.className = 'verdict-tile verdict-' + data.match_level.toLowerCase();
- 
-      // Score rings
-      animateRing('matchRingFill', data.match_score);
-      animateRing('atsRingFill',   data.ats_score);
- 
-      // Keywords
-      renderTags('matchingKeywords', data.matching_keywords, 'tag-match');
-      renderTags('missingKeywords',  data.missing_keywords,  'tag-miss');
- 
-      emptyState.hidden = true;
-      resultsContent.hidden = false;
-    }
- 
-    function renderTags(id, list, cls) {
-      const el = document.getElementById(id);
-      el.innerHTML = list.length
-        ? list.map(k => `<span class="kw-tag ${cls}">${k}</span>`).join('')
-        : '<span class="kw-empty">None found</span>';
-    }
- 
-    function animateRing(id, pct) {
-      const circ = 213.6;
-      const el   = document.getElementById(id);
-      el.style.strokeDashoffset = circ;
-      requestAnimationFrame(() => {
-        el.style.transition = 'stroke-dashoffset 1s cubic-bezier(.4,0,.2,1)';
-        el.style.strokeDashoffset = circ - (circ * Math.min(pct, 100)) / 100;
-      });
-    }
- 
-    function setLoading(on) {
-      analyzeBtn.disabled = on;
-      analyzeBtn.classList.toggle('loading', on);
-      loader.hidden   = !on;
-      emptyState.hidden = on;
-      if (on) resultsContent.hidden = true;
-    }
- 
-    function showError(msg) {
-      const el = document.createElement('div');
-      el.className = 'toast-error';
-      el.textContent = msg;
-      document.body.append(el);
-      setTimeout(() => el.remove(), 4000);
-    }
- 
-    function shakeField(el, msg) {
-      el.classList.add('field-error');
-      el.addEventListener('animationend', () => el.classList.remove('field-error'), { once: true });
-      showError(msg);
-    }
-  </script>
- 
+
+// Submit
+form.addEventListener("submit", async e=>{
+  e.preventDefault();
+
+  loader.hidden = false;
+  empty.hidden = true;
+  results.hidden = true;
+
+  const formData = new FormData(form);
+
+  const res = await fetch("/analyze", {
+    method:"POST",
+    body:formData
+  });
+
+  const data = await res.json();
+
+  loader.hidden = true;
+
+  if(data.error){
+    alert(data.error);
+    return;
+  }
+
+  results.hidden = false;
+
+  document.getElementById("matchScore").textContent = data.match_score + "%";
+  document.getElementById("atsScore").textContent = data.ats_score + "%";
+  document.getElementById("matchLevel").textContent = data.match_level;
+
+  document.getElementById("matchingKeywords").innerHTML =
+    data.matching_keywords.map(k=>`<span>${k}</span>`).join("");
+
+  document.getElementById("missingKeywords").innerHTML =
+    data.missing_keywords.map(k=>`<span>${k}</span>`).join("");
+
+});
+
+</script>
+
 </body>
 </html>
