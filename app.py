@@ -7,6 +7,8 @@ import os
 import re
 import logging
 from pathlib import Path
+import json
+from werkzeug.security import generate_password_hash, check_password_hash
  
 import PyPDF2
 from docx import Document
@@ -49,7 +51,7 @@ STOP_WORDS: frozenset = frozenset({
     "such", "than", "but", "not", "can", "all", "any", "our", "its",
     "has", "had", "may", "must", "use", "per", "get", "set", "new",
     "one", "two", "how", "who", "why", "each", "both", "some", "out",
-    "her", "his", "him", "she", "via", "etc", "e.g", "i.e",
+    "her", "his", "him", "she", "via", "etc", "e.g.", "i.e.",
 })
  
  
@@ -176,21 +178,65 @@ def calculate_ats_score(
     return max(0.0, min(100.0, round(ats, 1)))
  
  
-def classify_match(score: float) -> tuple[str, str]:
-    """Return a (level, color) classification for a given score."""
+def classify_match(score: float) -> str:
+    """Return a classification level for a given score."""
     if score >= 80:
-        return "Excellent", "green"
+        return "Excellent"
     if score >= 60:
-        return "Good", "blue"
+        return "Good"
     if score >= 40:
-        return "Average", "orange"
-    return "Low", "red"
+        return "Average"
+    return "Low"
  
- 
+ USER_DB = "users.json"
+
+def load_users():
+    if not os.path.exists(USER_DB):
+        return {}
+    with open(USER_DB, "r") as f:
+        return json.load(f)
+
+def save_users(users):
+    with open(USER_DB, "w") as f:
+        json.dump(users, f, indent=4)
+
 # ─────────────────────────────────────────────
 # Routes
 # ─────────────────────────────────────────────
  
+@app.route("/signup", methods=["POST"])
+def signup():
+    data = request.json
+    users = load_users()
+
+    email = data.get("email")
+    password = data.get("password")
+
+    if email in users:
+        return jsonify({"error": "User already exists"}), 400
+
+    users[email] = generate_password_hash(password)
+    save_users(users)
+
+    return jsonify({"message": "Signup successful"})
+
+
+@app.route("/login", methods=["POST"])
+def login():
+    data = request.json
+    users = load_users()
+
+    email = data.get("email")
+    password = data.get("password")
+
+    if email not in users:
+        return jsonify({"error": "User not found"}), 404
+
+    if not check_password_hash(users[email], password):
+        return jsonify({"error": "Incorrect password"}), 401
+
+    return jsonify({"message": "Login successful"})
+
 @app.route("/")
 def home():
     """Serve the main page."""
@@ -236,14 +282,13 @@ def analyze():
     # ── Analysis ──
     match_score, matching, missing = calculate_match_score(resume_text, job_desc)
     ats_score   = calculate_ats_score(match_score, resume_text, missing)
-    level, color = classify_match(match_score)
+    level = classify_match(match_score)
  
     return jsonify({
         "success":          True,
         "match_score":      match_score,
         "ats_score":        ats_score,
         "match_level":      level,
-        "color":            color,
         "matching_keywords": matching[:10],
         "missing_keywords":  missing[:10],
         "matching_count":   len(matching),
@@ -258,3 +303,6 @@ def analyze():
  
 if __name__ == "__main__":
     app.run(debug=True, host="0.0.0.0", port=5000)
+
+if __name__ == "__main__":
+    app.run(debug=True)
