@@ -675,3 +675,22 @@ body {
     border-color: #6366f1;
     box-shadow: 0 0 8px rgba(99,102,241,0.5);
 }
+
+.auth-page {
+    max-width: 400px;
+    margin: 100px auto;
+    padding: 30px;
+    background: var(--surface);
+    border-radius: 12px;
+    border: 1px solid var(--border);
+    display: flex;
+    flex-direction: column;
+    gap: 15px;
+    text-align: center;
+}
+
+.auth-page input {
+    padding: 12px;
+    border-radius: 8px;
+    border: 1px solid var(--border);
+}
