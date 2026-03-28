@@ -101,6 +101,14 @@ def extract_text(filepath):
         return extract_text_from_txt(filepath)
     return ""
 
+SKILL_DB = {
+    "python", "java", "c++", "javascript", "html", "css",
+    "react", "node", "flask", "django",
+    "sql", "mongodb",
+    "machine learning", "deep learning", "nlp", "data analysis",
+    "pandas", "numpy", "scikit-learn",
+    "aws", "docker", "kubernetes", "git"
+}
 
 # ─────────────────────────────────────────────
 # NLP Logic
