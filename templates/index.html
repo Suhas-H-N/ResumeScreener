@@ -166,14 +166,19 @@
 
 // Theme
 const toggle = document.getElementById("themeToggle");
+console.log("Theme toggle:", toggle);
 
 if(localStorage.getItem("theme")==="light"){
   document.body.classList.add("light");
 }
 
+toggle.textContent = document.body.classList.contains("light") ? "☀️" : "🌙";
+
 toggle.onclick = () => {
+  console.log("Theme toggle clicked");
   document.body.classList.toggle("light");
   localStorage.setItem("theme", document.body.classList.contains("light") ? "light" : "dark");
+  toggle.textContent = document.body.classList.contains("light") ? "☀️" : "🌙";
 };
 
 // Welcome
@@ -184,17 +189,19 @@ if(user){
 
 // File
 document.getElementById("resumeFile").addEventListener("change", e=>{
-  const name = e.target.files[0]?.name;
+  const fileName = e.target.files[0]?.name;
   const display = document.getElementById("fileNameDisplay");
-
-  if(name){
-    display.textContent = name;
+  if (fileName) {
+    display.textContent = "Selected: " + fileName;
     display.hidden = false;
+  } else {
+    display.hidden = true;
   }
 });
 
 // Submit
 document.getElementById("screeningForm").addEventListener("submit", async e=>{
+  console.log("Form submitted");
   e.preventDefault();
 
   document.getElementById("loader").hidden = false;
@@ -215,6 +222,7 @@ document.getElementById("screeningForm").addEventListener("submit", async e=>{
 
     if(data.error){
       alert(data.error);
+      document.getElementById("emptyState").hidden = false;
       return;
     }
 
@@ -244,6 +252,7 @@ document.getElementById("screeningForm").addEventListener("submit", async e=>{
 
   } catch (err) {
     document.getElementById("loader").hidden = true;
+    document.getElementById("emptyState").hidden = false;
     alert("Error: " + err.message);
   }
 

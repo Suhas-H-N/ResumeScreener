@@ -124,6 +124,19 @@ def extract_keywords(text):
     return {w for w in words if w not in STOP_WORDS}
 
 
+def extract_skills(text):
+    words = re.findall(r"\b[a-zA-Z+\-#]{2,}\b", text.lower())
+    skills = set()
+    for word in words:
+        if word in SKILL_DB:
+            skills.add(word)
+        # Check for compound skills
+        for skill in SKILL_DB:
+            if skill.replace(" ", "").replace("-", "").replace("+", "") in word:
+                skills.add(skill)
+    return list(skills)
+
+
 def calculate_match_score(resume, job_desc):
     try:
         vectorizer = TfidfVectorizer(stop_words="english")
@@ -275,6 +288,10 @@ def analyze():
     ats_score = calculate_ats_score(score, resume_text, missing)
     level = classify_match(score)
 
+    resume_skills = extract_skills(resume_text)
+    job_skills = extract_skills(job_desc)
+    missing_skills = list(set(job_skills) - set(resume_skills))
+
     return jsonify({
         "success": True,
         "match_score": score,
@@ -284,7 +301,9 @@ def analyze():
         "missing_keywords": missing[:10],
         "matching_count": len(matching),
         "missing_count": len(missing),
-        "resume_length": len(resume_text.split())
+        "resume_length": len(resume_text.split()),
+        "resume_skills": resume_skills,
+        "missing_skills": missing_skills[:10]
     })
 
 
