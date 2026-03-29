@@ -82,7 +82,7 @@ async function signup() {
     window.location.href = "/login-page";
 
   } catch (err) {
-    alert("Something went wrong");
+    alert("Something went wrong: " + err.message);
   }
 }
 

@@ -83,7 +83,7 @@ async function login() {
     window.location.href = "/";
 
   } catch (err) {
-    alert("Something went wrong");
+    alert("Something went wrong: " + err.message);
   }
 }
 

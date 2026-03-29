@@ -67,7 +67,7 @@
                 <span class="upload-sub">PDF · DOCX · TXT</span>
               </label>
 
-              <p id="fileNameDisplay" hidden></p>
+              <p id="fileNameDisplay" style="margin-top: 10px; color: var(--accent);" hidden></p>
             </div>
           </div>
 
@@ -176,9 +176,12 @@ if(localStorage.getItem("theme")==="light"){
   document.body.classList.add("light");
 }
 
+toggle.textContent = document.body.classList.contains("light") ? "☀️" : "🌙";
+
 toggle.onclick = () => {
   document.body.classList.toggle("light");
   localStorage.setItem("theme", document.body.classList.contains("light") ? "light" : "dark");
+  toggle.textContent = document.body.classList.contains("light") ? "☀️" : "🌙";
 };
 
 // Welcome user
@@ -189,7 +192,14 @@ if(user){
 
 // File display
 document.getElementById("resumeFile").addEventListener("change", e=>{
-  document.getElementById("fileNameDisplay").textContent = e.target.files[0]?.name;
+  const fileName = e.target.files[0]?.name;
+  const display = document.getElementById("fileNameDisplay");
+  if (fileName) {
+    display.textContent = "Selected: " + fileName;
+    display.hidden = false;
+  } else {
+    display.hidden = true;
+  }
 });
 
 // Submit
@@ -202,31 +212,39 @@ form.addEventListener("submit", async e=>{
 
   const formData = new FormData(form);
 
-  const res = await fetch("/analyze", {
-    method:"POST",
-    body:formData
-  });
+  try {
+    const res = await fetch("/analyze", {
+      method:"POST",
+      body:formData
+    });
 
-  const data = await res.json();
+    const data = await res.json();
 
-  loader.hidden = true;
+    loader.hidden = true;
 
-  if(data.error){
-    alert(data.error);
-    return;
+    if(data.error){
+      alert(data.error);
+      empty.hidden = false;
+      return;
+    }
+
+    results.hidden = false;
+
+    document.getElementById("matchScore").textContent = data.match_score + "%";
+    document.getElementById("atsScore").textContent = data.ats_score + "%";
+    document.getElementById("matchLevel").textContent = data.match_level;
+
+    document.getElementById("matchingKeywords").innerHTML =
+      data.matching_keywords.map(k=>`<span>${k}</span>`).join("");
+
+    document.getElementById("missingKeywords").innerHTML =
+      data.missing_keywords.map(k=>`<span>${k}</span>`).join("");
+
+  } catch (err) {
+    loader.hidden = true;
+    empty.hidden = false;
+    alert("Something went wrong: " + err.message);
   }
-
-  results.hidden = false;
-
-  document.getElementById("matchScore").textContent = data.match_score + "%";
-  document.getElementById("atsScore").textContent = data.ats_score + "%";
-  document.getElementById("matchLevel").textContent = data.match_level;
-
-  document.getElementById("matchingKeywords").innerHTML =
-    data.matching_keywords.map(k=>`<span>${k}</span>`).join("");
-
-  document.getElementById("missingKeywords").innerHTML =
-    data.missing_keywords.map(k=>`<span>${k}</span>`).join("");
 
 });
 
