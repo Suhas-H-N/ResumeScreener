@@ -14,7 +14,6 @@
 
 <body>
 
-<!-- Background -->
 <div class="bg-grid"></div>
 <div class="bg-orb orb-1"></div>
 <div class="bg-orb orb-2"></div>
@@ -45,7 +44,7 @@
   <main>
     <div class="layout">
 
-      <!-- LEFT PANEL -->
+      <!-- LEFT -->
       <section class="panel panel-input">
 
         <div class="panel-header">
@@ -59,64 +58,55 @@
           <div class="field-group">
             <label class="field-label">Resume File</label>
 
-            <div class="upload-zone" id="uploadZone">
+            <div class="upload-zone">
               <input type="file" id="resumeFile" name="resume_file" class="file-input" accept=".pdf,.docx,.txt">
 
               <label for="resumeFile" class="upload-label">
-                <span class="upload-title">Drop your resume here</span>
-                <span class="upload-sub">PDF · DOCX · TXT</span>
+                <span>Drop your resume here</span>
               </label>
 
-              <p id="fileNameDisplay" style="margin-top: 10px; color: var(--accent);" hidden></p>
+              <p id="fileNameDisplay" style="color: var(--accent);" hidden></p>
             </div>
           </div>
 
           <!-- Paste -->
           <div class="field-group">
             <label class="field-label">Or Paste Resume</label>
-            <textarea id="resumeText" name="resume_text" class="jd-textarea" placeholder="Paste resume..."></textarea>
+            <textarea id="resumeText" name="resume_text" class="jd-textarea"></textarea>
           </div>
 
-          <!-- Job Description -->
+          <!-- JD -->
           <div class="field-group">
             <div class="panel-header">
               <span class="step-badge">02</span>
               <h2>Job Description</h2>
             </div>
 
-            <textarea id="jobDescription" name="job_description" class="jd-textarea" placeholder="Paste job description..."></textarea>
+            <textarea id="jobDescription" name="job_description" class="jd-textarea"></textarea>
           </div>
 
-          <!-- Submit -->
-          <button type="submit" class="analyze-btn" id="analyzeBtn">
-            Analyze Resume →
-          </button>
+          <button type="submit" class="analyze-btn">Analyze Resume →</button>
 
         </form>
       </section>
 
-      <!-- RIGHT PANEL -->
+      <!-- RIGHT -->
       <section class="panel panel-results">
 
-        <!-- Empty -->
         <div id="emptyState" class="empty-state">
           <p>Results will appear here</p>
         </div>
 
-        <!-- Loader -->
-        <div id="loader" class="loader-wrap" hidden>
-          <div class="pulse-ring"></div>
+        <div id="loader" hidden>
           <p>Analyzing...</p>
         </div>
 
-        <!-- Results -->
         <div id="resultsContent" hidden>
 
           <h2>Analysis Report</h2>
 
           <!-- Scores -->
           <div class="scores-row">
-
             <div class="score-tile">
               <h3>Match</h3>
               <span id="matchScore">0%</span>
@@ -131,7 +121,6 @@
               <h3>Level</h3>
               <span id="matchLevel">-</span>
             </div>
-
           </div>
 
           <!-- Keywords -->
@@ -147,6 +136,19 @@
             </div>
           </div>
 
+          <!-- 🔥 NEW SKILLS SECTION -->
+          <div class="kw-grid">
+            <div>
+              <h4>Detected Skills</h4>
+              <div id="resumeSkills"></div>
+            </div>
+
+            <div>
+              <h4>Missing Skills</h4>
+              <div id="missingSkills"></div>
+            </div>
+          </div>
+
         </div>
 
       </section>
@@ -154,20 +156,13 @@
     </div>
   </main>
 
-  <!-- FOOTER -->
   <footer class="site-footer">
     <p>Built by Suhas 🚀</p>
   </footer>
 
 </div>
 
-<!-- JS -->
 <script>
-
-const form = document.getElementById("screeningForm");
-const loader = document.getElementById("loader");
-const results = document.getElementById("resultsContent");
-const empty = document.getElementById("emptyState");
 
 // Theme
 const toggle = document.getElementById("themeToggle");
@@ -176,74 +171,80 @@ if(localStorage.getItem("theme")==="light"){
   document.body.classList.add("light");
 }
 
-toggle.textContent = document.body.classList.contains("light") ? "☀️" : "🌙";
-
 toggle.onclick = () => {
   document.body.classList.toggle("light");
   localStorage.setItem("theme", document.body.classList.contains("light") ? "light" : "dark");
-  toggle.textContent = document.body.classList.contains("light") ? "☀️" : "🌙";
 };
 
-// Welcome user
+// Welcome
 const user = localStorage.getItem("user");
 if(user){
   document.getElementById("welcomeUser").textContent = "Welcome, " + user;
 }
 
-// File display
+// File
 document.getElementById("resumeFile").addEventListener("change", e=>{
-  const fileName = e.target.files[0]?.name;
+  const name = e.target.files[0]?.name;
   const display = document.getElementById("fileNameDisplay");
-  if (fileName) {
-    display.textContent = "Selected: " + fileName;
+
+  if(name){
+    display.textContent = name;
     display.hidden = false;
-  } else {
-    display.hidden = true;
   }
 });
 
 // Submit
-form.addEventListener("submit", async e=>{
+document.getElementById("screeningForm").addEventListener("submit", async e=>{
   e.preventDefault();
 
-  loader.hidden = false;
-  empty.hidden = true;
-  results.hidden = true;
+  document.getElementById("loader").hidden = false;
+  document.getElementById("emptyState").hidden = true;
+  document.getElementById("resultsContent").hidden = true;
 
-  const formData = new FormData(form);
+  const formData = new FormData(e.target);
 
   try {
     const res = await fetch("/analyze", {
-      method:"POST",
-      body:formData
+      method: "POST",
+      body: formData
     });
 
     const data = await res.json();
 
-    loader.hidden = true;
+    document.getElementById("loader").hidden = true;
 
     if(data.error){
       alert(data.error);
-      empty.hidden = false;
       return;
     }
 
-    results.hidden = false;
+    document.getElementById("resultsContent").hidden = false;
 
     document.getElementById("matchScore").textContent = data.match_score + "%";
     document.getElementById("atsScore").textContent = data.ats_score + "%";
     document.getElementById("matchLevel").textContent = data.match_level;
 
     document.getElementById("matchingKeywords").innerHTML =
-      data.matching_keywords.map(k=>`<span>${k}</span>`).join("");
+      data.matching_keywords.map(k => `<span>${k}</span>`).join("");
 
     document.getElementById("missingKeywords").innerHTML =
-      data.missing_keywords.map(k=>`<span>${k}</span>`).join("");
+      data.missing_keywords.map(k => `<span>${k}</span>`).join("");
+
+    // SAFE SKILLS
+    const resumeSkillsEl = document.getElementById("resumeSkills");
+    const missingSkillsEl = document.getElementById("missingSkills");
+
+    if(resumeSkillsEl && missingSkillsEl){
+      resumeSkillsEl.innerHTML =
+        (data.resume_skills || []).map(s => `<span>${s}</span>`).join("");
+
+      missingSkillsEl.innerHTML =
+        (data.missing_skills || []).map(s => `<span>${s}</span>`).join("");
+    }
 
   } catch (err) {
-    loader.hidden = true;
-    empty.hidden = false;
-    alert("Something went wrong: " + err.message);
+    document.getElementById("loader").hidden = true;
+    alert("Error: " + err.message);
   }
 
 });
