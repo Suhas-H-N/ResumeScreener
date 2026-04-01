@@ -75,3 +75,6 @@ Matching and missing keywords are displayed
 
 👨‍💻 Author:
 Suhas H N
+
+⭐ Support
+If you like this project, consider giving it a star ⭐ on GitHub.
