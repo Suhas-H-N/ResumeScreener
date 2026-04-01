@@ -3,6 +3,7 @@
 The system extracts text from resumes (PDF, DOCX, TXT), processes the content using Natural Language Processing (NLP), and calculates a similarity score between the resume and job description.
 
 🚀 Features:
+
 • Upload resume files (PDF, DOCX, TXT)
 • Paste resume text manually
 • Enter job description for comparison
@@ -11,25 +12,26 @@ The system extracts text from resumes (PDF, DOCX, TXT), processes the content us
 • Resume statistics such as word count
 • Clean and responsive web interface
 
-🛠 Tech Stack
+🛠 Tech Stack:
 
-Backend
+Backend:
 • Python
 • Flask
 
-Machine Learning / NLP
+Machine Learning / NLP:
 • Scikit-learn (TF-IDF Vectorizer, Cosine Similarity)
 
-Document Processing
+Document Processing:
 • PyPDF2
 • python-docx
 
-Frontend
+Frontend:
 • HTML
 • CSS
 • JavaScript
 
-📂 Project Structure
+📂 Project Structure:
+
 ResumeScreener
 │
 ├── app.py
@@ -44,7 +46,7 @@ ResumeScreener
 │
 └── uploads
 
-⚙️ Installation
+⚙️ Installation:
 
 1️. Clone the repository:
 git clone https://github.com/YOUR_USERNAME/ResumeScreener.git
@@ -59,6 +61,7 @@ pip install -r requirements.txt
 python app.py
 
 📊 How It Works:
+
 User uploads a resume or pastes resume text
 User enters the job description
 System extracts keywords from both texts
@@ -67,6 +70,7 @@ Cosine similarity calculates the match score
 Matching and missing keywords are displayed
 
 📈 Future Improvements:
+
 • Advanced NLP using spaCy
 • Skill extraction and classification
 • Resume ranking system for multiple candidates
