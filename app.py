@@ -1,7 +1,3 @@
-"""
-ResumeIQ — app.py
-Clean, production-style Flask backend for AI Resume Screener
-"""
 
 import os
 import re
@@ -179,7 +175,6 @@ def classify_match(score):
     elif score >= 40:
         return "Average"
     return "Low"
-
 
 # ─────────────────────────────────────────────
 # Routes
