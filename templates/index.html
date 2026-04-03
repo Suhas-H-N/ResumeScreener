@@ -1,4 +1,5 @@
 <!DOCTYPE html>
+
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
@@ -6,9 +7,11 @@
   <title>ResumeIQ — AI Resume Screener</title>
 
   <!-- Fonts -->
+
   <link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;700;800&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet">
 
   <!-- CSS -->
+
   <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
 </head>
 
@@ -21,139 +24,147 @@
 <div class="app-shell">
 
   <!-- HEADER -->
+
   <header class="site-header">
     <div class="logo">
       <span class="logo-mark">R</span>
       <span class="logo-text">ResumeIQ</span>
     </div>
 
-    <div class="header-right">
-      <p class="tagline">AI-Powered Resume Screening & ATS Analysis</p>
+```
+<div class="header-right">
+  <p class="tagline">AI-Powered Resume Screening & ATS Analysis</p>
 
-      <div class="auth-buttons">
-        <span id="welcomeUser"></span>
-        <a href="/login-page" class="btn btn-secondary">Login</a>
-        <a href="/signup-page" class="btn btn-primary">Get Started</a>
-      </div>
+  <div class="auth-buttons">
+    <span id="welcomeUser"></span>
+    <a href="/login-page" class="btn btn-secondary">Login</a>
+    <a href="/signup-page" class="btn btn-primary">Get Started</a>
+  </div>
 
-      <button id="themeToggle" class="theme-toggle">🌙</button>
-    </div>
+  <button id="themeToggle" class="theme-toggle">🌙</button>
+</div>
+```
+
   </header>
 
   <!-- MAIN -->
+
   <main>
     <div class="layout">
 
-      <!-- LEFT -->
-      <section class="panel panel-input">
+```
+  <!-- LEFT -->
+  <section class="panel panel-input">
 
+    <div class="panel-header">
+      <span class="step-badge">01</span>
+      <h2>Upload Resume</h2>
+    </div>
+
+    <form id="screeningForm">
+
+      <!-- Upload -->
+      <div class="field-group">
+        <label class="field-label">Resume File</label>
+
+        <div class="upload-zone" id="dropZone">
+          <input type="file" id="resumeFile" name="resume_file" class="file-input" accept=".pdf,.docx,.txt">
+
+          <label for="resumeFile" class="upload-label">
+            <span>📄 Drag & Drop or Click to Upload</span>
+          </label>
+
+          <p id="fileNameDisplay" hidden></p>
+        </div>
+      </div>
+
+      <!-- Paste -->
+      <div class="field-group">
+        <label class="field-label">Or Paste Resume</label>
+        <textarea id="resumeText" name="resume_text" class="jd-textarea" placeholder="Paste resume text here..."></textarea>
+      </div>
+
+      <!-- JD -->
+      <div class="field-group">
         <div class="panel-header">
-          <span class="step-badge">01</span>
-          <h2>Upload Resume</h2>
+          <span class="step-badge">02</span>
+          <h2>Job Description</h2>
         </div>
 
-        <form id="screeningForm">
+        <textarea id="jobDescription" name="job_description" class="jd-textarea" placeholder="Paste job description here..."></textarea>
+      </div>
 
-          <!-- Upload -->
-          <div class="field-group">
-            <label class="field-label">Resume File</label>
+      <button type="submit" class="analyze-btn">🚀 Analyze Resume</button>
 
-            <div class="upload-zone">
-              <input type="file" id="resumeFile" name="resume_file" class="file-input" accept=".pdf,.docx,.txt">
+    </form>
+  </section>
 
-              <label for="resumeFile" class="upload-label">
-                <span>Drop your resume here</span>
-              </label>
+  <!-- RIGHT -->
+  <section class="panel panel-results">
 
-              <p id="fileNameDisplay" style="color: var(--accent);" hidden></p>
-            </div>
-          </div>
+    <div id="emptyState" class="empty-state">
+      <p>📊 Results will appear here</p>
+    </div>
 
-          <!-- Paste -->
-          <div class="field-group">
-            <label class="field-label">Or Paste Resume</label>
-            <textarea id="resumeText" name="resume_text" class="jd-textarea"></textarea>
-          </div>
+    <div id="loader" hidden>
+      <p>⏳ Analyzing Resume...</p>
+    </div>
 
-          <!-- JD -->
-          <div class="field-group">
-            <div class="panel-header">
-              <span class="step-badge">02</span>
-              <h2>Job Description</h2>
-            </div>
+    <div id="resultsContent" hidden>
 
-            <textarea id="jobDescription" name="job_description" class="jd-textarea"></textarea>
-          </div>
+      <h2>📄 Analysis Report</h2>
 
-          <button type="submit" class="analyze-btn">Analyze Resume →</button>
-
-        </form>
-      </section>
-
-      <!-- RIGHT -->
-      <section class="panel panel-results">
-
-        <div id="emptyState" class="empty-state">
-          <p>Results will appear here</p>
+      <!-- Scores -->
+      <div class="scores-row">
+        <div class="score-tile">
+          <h3>Match</h3>
+          <span id="matchScore">0%</span>
         </div>
 
-        <div id="loader" hidden>
-          <p>Analyzing...</p>
+        <div class="score-tile">
+          <h3>ATS</h3>
+          <span id="atsScore">0%</span>
         </div>
 
-        <div id="resultsContent" hidden>
+        <div class="score-tile">
+          <h3>Level</h3>
+          <span id="matchLevel">-</span>
+        </div>
+      </div>
 
-          <h2>Analysis Report</h2>
-
-          <!-- Scores -->
-          <div class="scores-row">
-            <div class="score-tile">
-              <h3>Match</h3>
-              <span id="matchScore">0%</span>
-            </div>
-
-            <div class="score-tile">
-              <h3>ATS</h3>
-              <span id="atsScore">0%</span>
-            </div>
-
-            <div class="score-tile">
-              <h3>Level</h3>
-              <span id="matchLevel">-</span>
-            </div>
-          </div>
-
-          <!-- Keywords -->
-          <div class="kw-grid">
-            <div>
-              <h4>Matching</h4>
-              <div id="matchingKeywords"></div>
-            </div>
-
-            <div>
-              <h4>Missing</h4>
-              <div id="missingKeywords"></div>
-            </div>
-          </div>
-
-          <!-- 🔥 NEW SKILLS SECTION -->
-          <div class="kw-grid">
-            <div>
-              <h4>Detected Skills</h4>
-              <div id="resumeSkills"></div>
-            </div>
-
-            <div>
-              <h4>Missing Skills</h4>
-              <div id="missingSkills"></div>
-            </div>
-          </div>
-
+      <!-- Keywords -->
+      <div class="kw-grid">
+        <div>
+          <h4>Matching Keywords</h4>
+          <div id="matchingKeywords"></div>
         </div>
 
-      </section>
+        <div>
+          <h4>Missing Keywords</h4>
+          <div id="missingKeywords"></div>
+        </div>
+      </div>
+
+      <!-- Skills -->
+      <div class="kw-grid">
+        <div>
+          <h4>Detected Skills</h4>
+          <div id="resumeSkills"></div>
+        </div>
+
+        <div>
+          <h4>Missing Skills</h4>
+          <div id="missingSkills"></div>
+        </div>
+      </div>
 
     </div>
+
+  </section>
+
+</div>
+```
+
   </main>
 
   <footer class="site-footer">
@@ -164,9 +175,8 @@
 
 <script>
 
-// Theme
+// THEME
 const toggle = document.getElementById("themeToggle");
-console.log("Theme toggle:", toggle);
 
 if(localStorage.getItem("theme")==="light"){
   document.body.classList.add("light");
@@ -175,34 +185,69 @@ if(localStorage.getItem("theme")==="light"){
 toggle.textContent = document.body.classList.contains("light") ? "☀️" : "🌙";
 
 toggle.onclick = () => {
-  console.log("Theme toggle clicked");
   document.body.classList.toggle("light");
   localStorage.setItem("theme", document.body.classList.contains("light") ? "light" : "dark");
   toggle.textContent = document.body.classList.contains("light") ? "☀️" : "🌙";
 };
 
-// Welcome
+// USER
 const user = localStorage.getItem("user");
 if(user){
   document.getElementById("welcomeUser").textContent = "Welcome, " + user;
 }
 
-// File
-document.getElementById("resumeFile").addEventListener("change", e=>{
-  const fileName = e.target.files[0]?.name;
-  const display = document.getElementById("fileNameDisplay");
-  if (fileName) {
-    display.textContent = "Selected: " + fileName;
-    display.hidden = false;
-  } else {
-    display.hidden = true;
+// FILE DISPLAY
+const fileInput = document.getElementById("resumeFile");
+const fileDisplay = document.getElementById("fileNameDisplay");
+
+fileInput.addEventListener("change", e=>{
+  const file = e.target.files[0];
+  if(file){
+    fileDisplay.textContent = "Selected: " + file.name;
+    fileDisplay.hidden = false;
   }
 });
 
-// Submit
-document.getElementById("screeningForm").addEventListener("submit", async e=>{
-  console.log("Form submitted");
+// DRAG DROP
+const dropZone = document.getElementById("dropZone");
+
+dropZone.addEventListener("dragover", e=>{
   e.preventDefault();
+  dropZone.classList.add("dragover");
+});
+
+dropZone.addEventListener("dragleave", ()=>{
+  dropZone.classList.remove("dragover");
+});
+
+dropZone.addEventListener("drop", e=>{
+  e.preventDefault();
+  dropZone.classList.remove("dragover");
+
+  const file = e.dataTransfer.files[0];
+  fileInput.files = e.dataTransfer.files;
+
+  fileDisplay.textContent = "Selected: " + file.name;
+  fileDisplay.hidden = false;
+});
+
+// SUBMIT
+document.getElementById("screeningForm").addEventListener("submit", async e=>{
+  e.preventDefault();
+
+  const file = fileInput.files[0];
+  const resumeText = document.getElementById("resumeText").value.trim();
+  const jd = document.getElementById("jobDescription").value.trim();
+
+  if(!file && !resumeText){
+    alert("⚠️ Upload or paste resume");
+    return;
+  }
+
+  if(!jd){
+    alert("⚠️ Job description required");
+    return;
+  }
 
   document.getElementById("loader").hidden = false;
   document.getElementById("emptyState").hidden = true;
@@ -217,7 +262,6 @@ document.getElementById("screeningForm").addEventListener("submit", async e=>{
     });
 
     const data = await res.json();
-
     document.getElementById("loader").hidden = true;
 
     if(data.error){
@@ -233,31 +277,24 @@ document.getElementById("screeningForm").addEventListener("submit", async e=>{
     document.getElementById("matchLevel").textContent = data.match_level;
 
     document.getElementById("matchingKeywords").innerHTML =
-      data.matching_keywords.map(k => `<span>${k}</span>`).join("");
+      (data.matching_keywords || []).map(k => `<span>${k}</span>`).join("");
 
     document.getElementById("missingKeywords").innerHTML =
-      data.missing_keywords.map(k => `<span>${k}</span>`).join("");
+      (data.missing_keywords || []).map(k => `<span>${k}</span>`).join("");
 
-    // SAFE SKILLS
-    const resumeSkillsEl = document.getElementById("resumeSkills");
-    const missingSkillsEl = document.getElementById("missingSkills");
+    document.getElementById("resumeSkills").innerHTML =
+      (data.resume_skills || []).map(s => `<span>${s}</span>`).join("");
 
-    if(resumeSkillsEl && missingSkillsEl){
-      resumeSkillsEl.innerHTML =
-        (data.resume_skills || []).map(s => `<span>${s}</span>`).join("");
-
-      missingSkillsEl.innerHTML =
-        (data.missing_skills || []).map(s => `<span>${s}</span>`).join("");
-    }
+    document.getElementById("missingSkills").innerHTML =
+      (data.missing_skills || []).map(s => `<span>${s}</span>`).join("");
 
   } catch (err) {
     document.getElementById("loader").hidden = true;
     document.getElementById("emptyState").hidden = false;
-    alert("Error: " + err.message);
+    alert("❌ Error: " + err.message);
   }
 
 });
-
 </script>
 
 </body>
