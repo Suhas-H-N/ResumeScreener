@@ -1,170 +1,155 @@
 <!DOCTYPE html>
-
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <title>ResumeIQ — AI Resume Screener</title>
 
-  <!-- Fonts -->
-
   <link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;700;800&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet">
-
-  <!-- CSS -->
 
   <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
 </head>
 
 <body>
 
-<div class="bg-grid"></div>
-<div class="bg-orb orb-1"></div>
-<div class="bg-orb orb-2"></div>
-
 <div class="app-shell">
 
   <!-- HEADER -->
-
   <header class="site-header">
     <div class="logo">
       <span class="logo-mark">R</span>
       <span class="logo-text">ResumeIQ</span>
     </div>
 
-```
-<div class="header-right">
-  <p class="tagline">AI-Powered Resume Screening & ATS Analysis</p>
+    <div class="header-right">
+      <p class="tagline">AI-Powered Resume Screening & ATS Analysis</p>
 
-  <div class="auth-buttons">
-    <span id="welcomeUser"></span>
-    <a href="/login-page" class="btn btn-secondary">Login</a>
-    <a href="/signup-page" class="btn btn-primary">Get Started</a>
-  </div>
+      <div class="auth-buttons">
+        <span id="welcomeUser"></span>
+        <a href="/login-page" class="btn btn-secondary">Login</a>
+        <a href="/signup-page" class="btn btn-primary">Get Started</a>
+      </div>
 
-  <button id="themeToggle" class="theme-toggle">🌙</button>
-</div>
-```
-
+      <button id="themeToggle" class="theme-toggle">🌙</button>
+    </div>
   </header>
 
   <!-- MAIN -->
-
   <main>
     <div class="layout">
 
-```
-  <!-- LEFT -->
-  <section class="panel panel-input">
+      <!-- LEFT PANEL -->
+      <section class="panel panel-input">
 
-    <div class="panel-header">
-      <span class="step-badge">01</span>
-      <h2>Upload Resume</h2>
-    </div>
-
-    <form id="screeningForm">
-
-      <!-- Upload -->
-      <div class="field-group">
-        <label class="field-label">Resume File</label>
-
-        <div class="upload-zone" id="dropZone">
-          <input type="file" id="resumeFile" name="resume_file" class="file-input" accept=".pdf,.docx,.txt">
-
-          <label for="resumeFile" class="upload-label">
-            <span>📄 Drag & Drop or Click to Upload</span>
-          </label>
-
-          <p id="fileNameDisplay" hidden></p>
-        </div>
-      </div>
-
-      <!-- Paste -->
-      <div class="field-group">
-        <label class="field-label">Or Paste Resume</label>
-        <textarea id="resumeText" name="resume_text" class="jd-textarea" placeholder="Paste resume text here..."></textarea>
-      </div>
-
-      <!-- JD -->
-      <div class="field-group">
         <div class="panel-header">
-          <span class="step-badge">02</span>
-          <h2>Job Description</h2>
+          <span class="step-badge">01</span>
+          <h2>Upload Resume</h2>
         </div>
 
-        <textarea id="jobDescription" name="job_description" class="jd-textarea" placeholder="Paste job description here..."></textarea>
-      </div>
+        <form id="screeningForm">
 
-      <button type="submit" class="analyze-btn">🚀 Analyze Resume</button>
+          <div class="field-group">
+            <label class="field-label">Resume File</label>
 
-    </form>
-  </section>
+            <div class="upload-zone" id="dropZone">
+              <input type="file" id="resumeFile" name="resume_file" class="file-input" accept=".pdf,.docx,.txt">
 
-  <!-- RIGHT -->
-  <section class="panel panel-results">
+              <label for="resumeFile" class="upload-label">
+                <span>📄 Drag & Drop or Click to Upload</span>
+              </label>
 
-    <div id="emptyState" class="empty-state">
-      <p>📊 Results will appear here</p>
+              <p id="fileNameDisplay" hidden></p>
+            </div>
+          </div>
+
+          <div class="field-group">
+            <label class="field-label">Or Paste Resume</label>
+            <textarea id="resumeText" name="resume_text" class="jd-textarea" placeholder="Paste resume text here..."></textarea>
+          </div>
+
+          <div class="field-group">
+            <div class="panel-header">
+              <span class="step-badge">02</span>
+              <h2>Job Description</h2>
+            </div>
+
+            <textarea id="jobDescription" name="job_description" class="jd-textarea" placeholder="Paste job description here..."></textarea>
+          </div>
+
+          <button type="submit" class="analyze-btn">🚀 Analyze Resume</button>
+
+        </form>
+      </section>
+
+      <!-- RIGHT PANEL -->
+      <section class="panel panel-results">
+
+        <div id="emptyState" class="empty-state">
+          <p>📊 Results will appear here</p>
+        </div>
+
+        <div id="loader" hidden>
+          <p>⏳ Analyzing Resume...</p>
+        </div>
+
+        <div id="resultsContent" hidden>
+
+          <h2>📄 Analysis Report</h2>
+
+          <!-- ✅ DOWNLOAD BUTTON -->
+          <button onclick="downloadReport()" class="analyze-btn">
+            📄 Download Report
+          </button>
+
+          <!-- Scores -->
+          <div class="scores-row">
+            <div class="score-tile">
+              <h3>Match</h3>
+              <span id="matchScore">0%</span>
+            </div>
+
+            <div class="score-tile">
+              <h3>ATS</h3>
+              <span id="atsScore">0%</span>
+            </div>
+
+            <div class="score-tile">
+              <h3>Level</h3>
+              <span id="matchLevel">-</span>
+            </div>
+          </div>
+
+          <!-- Keywords -->
+          <div class="kw-grid">
+            <div>
+              <h4>Matching Keywords</h4>
+              <div id="matchingKeywords"></div>
+            </div>
+
+            <div>
+              <h4>Missing Keywords</h4>
+              <div id="missingKeywords"></div>
+            </div>
+          </div>
+
+          <!-- Skills -->
+          <div class="kw-grid">
+            <div>
+              <h4>Detected Skills</h4>
+              <div id="resumeSkills"></div>
+            </div>
+
+            <div>
+              <h4>Missing Skills + Recommendations</h4>
+              <div id="missingSkills"></div>
+            </div>
+          </div>
+
+        </div>
+
+      </section>
+
     </div>
-
-    <div id="loader" hidden>
-      <p>⏳ Analyzing Resume...</p>
-    </div>
-
-    <div id="resultsContent" hidden>
-
-      <h2>📄 Analysis Report</h2>
-
-      <!-- Scores -->
-      <div class="scores-row">
-        <div class="score-tile">
-          <h3>Match</h3>
-          <span id="matchScore">0%</span>
-        </div>
-
-        <div class="score-tile">
-          <h3>ATS</h3>
-          <span id="atsScore">0%</span>
-        </div>
-
-        <div class="score-tile">
-          <h3>Level</h3>
-          <span id="matchLevel">-</span>
-        </div>
-      </div>
-
-      <!-- Keywords -->
-      <div class="kw-grid">
-        <div>
-          <h4>Matching Keywords</h4>
-          <div id="matchingKeywords"></div>
-        </div>
-
-        <div>
-          <h4>Missing Keywords</h4>
-          <div id="missingKeywords"></div>
-        </div>
-      </div>
-
-      <!-- Skills -->
-      <div class="kw-grid">
-        <div>
-          <h4>Detected Skills</h4>
-          <div id="resumeSkills"></div>
-        </div>
-
-        <div>
-          <h4>Missing Skills</h4>
-          <div id="missingSkills"></div>
-        </div>
-      </div>
-
-    </div>
-
-  </section>
-
-</div>
-```
-
   </main>
 
   <footer class="site-footer">
@@ -175,19 +160,16 @@
 
 <script>
 
-// THEME
+// THEME FIX
 const toggle = document.getElementById("themeToggle");
 
-if(localStorage.getItem("theme")==="light"){
-  document.body.classList.add("light");
+if(localStorage.getItem("theme") === "dark"){
+  document.body.classList.add("dark-mode");
 }
 
-toggle.textContent = document.body.classList.contains("light") ? "☀️" : "🌙";
-
 toggle.onclick = () => {
-  document.body.classList.toggle("light");
-  localStorage.setItem("theme", document.body.classList.contains("light") ? "light" : "dark");
-  toggle.textContent = document.body.classList.contains("light") ? "☀️" : "🌙";
+  document.body.classList.toggle("dark-mode");
+  localStorage.setItem("theme", document.body.classList.contains("dark-mode") ? "dark" : "light");
 };
 
 // USER
@@ -208,93 +190,70 @@ fileInput.addEventListener("change", e=>{
   }
 });
 
-// DRAG DROP
-const dropZone = document.getElementById("dropZone");
-
-dropZone.addEventListener("dragover", e=>{
-  e.preventDefault();
-  dropZone.classList.add("dragover");
-});
-
-dropZone.addEventListener("dragleave", ()=>{
-  dropZone.classList.remove("dragover");
-});
-
-dropZone.addEventListener("drop", e=>{
-  e.preventDefault();
-  dropZone.classList.remove("dragover");
-
-  const file = e.dataTransfer.files[0];
-  fileInput.files = e.dataTransfer.files;
-
-  fileDisplay.textContent = "Selected: " + file.name;
-  fileDisplay.hidden = false;
-});
-
-// SUBMIT
+// FORM SUBMIT
 document.getElementById("screeningForm").addEventListener("submit", async e=>{
   e.preventDefault();
 
-  const file = fileInput.files[0];
-  const resumeText = document.getElementById("resumeText").value.trim();
-  const jd = document.getElementById("jobDescription").value.trim();
-
-  if(!file && !resumeText){
-    alert("⚠️ Upload or paste resume");
-    return;
-  }
-
-  if(!jd){
-    alert("⚠️ Job description required");
-    return;
-  }
-
-  document.getElementById("loader").hidden = false;
-  document.getElementById("emptyState").hidden = true;
-  document.getElementById("resultsContent").hidden = true;
-
   const formData = new FormData(e.target);
 
-  try {
-    const res = await fetch("/analyze", {
-      method: "POST",
-      body: formData
-    });
+  document.getElementById("loader").hidden = false;
 
-    const data = await res.json();
-    document.getElementById("loader").hidden = true;
+  const res = await fetch("/analyze", {
+    method: "POST",
+    body: formData
+  });
 
-    if(data.error){
-      alert(data.error);
-      document.getElementById("emptyState").hidden = false;
-      return;
-    }
+  const data = await res.json();
+  document.getElementById("loader").hidden = true;
 
-    document.getElementById("resultsContent").hidden = false;
-
-    document.getElementById("matchScore").textContent = data.match_score + "%";
-    document.getElementById("atsScore").textContent = data.ats_score + "%";
-    document.getElementById("matchLevel").textContent = data.match_level;
-
-    document.getElementById("matchingKeywords").innerHTML =
-      (data.matching_keywords || []).map(k => `<span>${k}</span>`).join("");
-
-    document.getElementById("missingKeywords").innerHTML =
-      (data.missing_keywords || []).map(k => `<span>${k}</span>`).join("");
-
-    document.getElementById("resumeSkills").innerHTML =
-      (data.resume_skills || []).map(s => `<span>${s}</span>`).join("");
-
-    document.getElementById("missingSkills").innerHTML =
-      (data.missing_skills || []).map(s => `<span>${s}</span>`).join("");
-
-  } catch (err) {
-    document.getElementById("loader").hidden = true;
-    document.getElementById("emptyState").hidden = false;
-    alert("❌ Error: " + err.message);
+  if(data.error){
+    alert(data.error);
+    return;
   }
 
+  document.getElementById("resultsContent").hidden = false;
+
+  document.getElementById("matchScore").textContent = data.match_score + "%";
+  document.getElementById("matchLevel").textContent = data.level;
+
+  document.getElementById("matchingKeywords").innerHTML =
+    data.matching_keywords.map(k => `<span>${k}</span>`).join("");
+
+  document.getElementById("missingKeywords").innerHTML =
+    data.missing_keywords.map(k => `<span>${k}</span>`).join("");
+
+  document.getElementById("resumeSkills").innerHTML =
+    (data.resume_skills || []).map(s => `<span>${s}</span>`).join("");
+
+  document.getElementById("missingSkills").innerHTML =
+    (data.missing_skills || []).map(s => `<span>${s}</span>`).join("") +
+    (data.recommendations ? `<ul>${data.recommendations.map(r=>`<li>${r}</li>`).join("")}</ul>` : "");
 });
+
+// DOWNLOAD REPORT
+async function downloadReport(){
+  const data = {
+    match_score: document.getElementById("matchScore").textContent,
+    level: document.getElementById("matchLevel").textContent,
+    missing_keywords: Array.from(document.querySelectorAll("#missingKeywords span")).map(e=>e.textContent),
+    recommendations: Array.from(document.querySelectorAll("#missingSkills li")).map(e=>e.textContent)
+  };
+
+  const res = await fetch("/download-report", {
+    method: "POST",
+    headers: {"Content-Type": "application/json"},
+    body: JSON.stringify(data)
+  });
+
+  const blob = await res.blob();
+  const url = window.URL.createObjectURL(blob);
+
+  const a = document.createElement("a");
+  a.href = url;
+  a.download = "Resume_Report.pdf";
+  a.click();
+}
+
 </script>
 
 </body>
