@@ -1,4 +1,3 @@
-
 /* ───────── RESET ───────── */
 * {
   margin: 0;
@@ -9,8 +8,8 @@
 /* ───────── ROOT VARIABLES ───────── */
 :root {
   --bg: #0d0f14;
-  --surface: #13161e;
-  --surface-alt: #191c26;
+  --surface: rgba(19,22,30,0.8);
+  --surface-alt: rgba(25,28,38,0.8);
   --border: rgba(255,255,255,0.08);
 
   --text-primary: #f1f5f9;
@@ -18,16 +17,20 @@
 
   --accent: #6ee7b7;
   --accent-2: #6366f1;
-  --danger: #ef4444;
 
-  --radius: 12px;
+  --radius: 14px;
 
   --font-main: 'DM Sans', sans-serif;
   --font-head: 'Syne', sans-serif;
 }
 
-/* LIGHT MODE */
-body.light {
+/* 🌙 DARK MODE (default already) */
+body.dark-mode {
+  background: var(--bg);
+}
+
+/* ☀️ LIGHT MODE */
+body.light-mode {
   --bg: #f8fafc;
   --surface: #ffffff;
   --surface-alt: #f1f5f9;
@@ -43,6 +46,7 @@ body {
   background: var(--bg);
   color: var(--text-primary);
   min-height: 100vh;
+  transition: all 0.3s ease;
 }
 
 /* ───────── BACKGROUND ───────── */
@@ -128,11 +132,16 @@ body {
   border-radius: 8px;
   text-decoration: none;
   font-size: 14px;
+  transition: 0.3s;
 }
 
 .btn-primary {
   background: linear-gradient(135deg, var(--accent), var(--accent-2));
   color: black;
+}
+
+.btn-primary:hover {
+  opacity: 0.9;
 }
 
 .btn-secondary {
@@ -155,12 +164,13 @@ body {
   gap: 20px;
 }
 
-/* ───────── PANEL ───────── */
+/* ───────── PANEL (GLASS EFFECT) ───────── */
 .panel {
   background: var(--surface);
   padding: 20px;
   border-radius: var(--radius);
   border: 1px solid var(--border);
+  backdrop-filter: blur(12px);
 }
 
 /* ───────── FORM ───────── */
@@ -179,10 +189,11 @@ body {
   padding: 20px;
   text-align: center;
   border-radius: var(--radius);
+  transition: 0.3s;
 }
 
-.file-input {
-  display: none;
+.upload-zone.dragover {
+  border-color: var(--accent);
 }
 
 /* ───────── TEXTAREA ───────── */
@@ -201,18 +212,20 @@ body {
   padding: 12px;
   border-radius: var(--radius);
   border: none;
-  background: var(--accent);
+  background: linear-gradient(135deg, var(--accent), var(--accent-2));
+  color: black;
   cursor: pointer;
+  transition: 0.3s;
+}
+
+.analyze-btn:hover {
+  transform: translateY(-2px);
 }
 
 /* ───────── RESULTS ───────── */
 .empty-state {
   text-align: center;
   color: var(--text-secondary);
-}
-
-.loader-wrap {
-  text-align: center;
 }
 
 .scores-row {
@@ -240,6 +253,28 @@ body {
   background: var(--surface-alt);
   margin: 2px;
   border-radius: 6px;
+}
+
+/* ───────── AUTH PAGES ───────── */
+.auth-page {
+  max-width: 400px;
+  margin: auto;
+  background: var(--surface);
+  padding: 30px;
+  border-radius: var(--radius);
+  border: 1px solid var(--border);
+  backdrop-filter: blur(12px);
+  text-align: center;
+}
+
+.auth-page input {
+  width: 100%;
+  padding: 10px;
+  margin: 8px 0;
+  border-radius: var(--radius);
+  border: 1px solid var(--border);
+  background: var(--surface-alt);
+  color: var(--text-primary);
 }
 
 /* ───────── FOOTER ───────── */
