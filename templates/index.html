@@ -1,36 +1,40 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8" />
+  <meta charset="UTF-8"/>
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <title>ResumeIQ — AI Resume Screener</title>
-
   <link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;700;800&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet">
-
   <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
 </head>
-
 <body>
+
+<div class="bg-grid"></div>
+<div class="bg-orb orb-1"></div>
+<div class="bg-orb orb-2"></div>
 
 <div class="app-shell">
 
   <!-- HEADER -->
   <header class="site-header">
     <div class="logo">
-      <span class="logo-mark">R</span>
+      <div class="logo-mark">R</div>
       <span class="logo-text">ResumeIQ</span>
+      <span class="logo-badge">v2.0</span>
     </div>
 
     <div class="header-right">
-      <p class="tagline">AI-Powered Resume Screening & ATS Analysis</p>
-
-      <div class="auth-buttons">
-        <span id="welcomeUser"></span>
-        <a href="/login-page" class="btn btn-secondary">Login</a>
-        <a href="/signup-page" class="btn btn-primary">Get Started</a>
+      <div class="nav-links">
+        <a href="/compare-page" class="btn btn-ghost btn-sm">⚖️ Compare</a>
+        <a href="/history-page" class="btn btn-ghost btn-sm" id="historyNavBtn">📋 History</a>
       </div>
-
-      <button id="themeToggle" class="theme-toggle">🌙</button>
+      <div id="authArea">
+        <span id="welcomeChip" class="welcome-chip hidden"></span>
+        <a href="/login-page"  id="loginBtn"  class="btn btn-secondary btn-sm">Login</a>
+        <a href="/signup-page" id="signupBtn" class="btn btn-primary btn-sm">Sign Up</a>
+        <button id="logoutBtn" class="btn btn-ghost btn-sm hidden" onclick="doLogout()">Sign Out</button>
+      </div>
+      <button id="themeToggle" class="theme-toggle" title="Toggle theme">🌙</button>
     </div>
   </header>
 
@@ -38,7 +42,7 @@
   <main>
     <div class="layout">
 
-      <!-- LEFT PANEL -->
+      <!-- LEFT: INPUT PANEL -->
       <section class="panel panel-input">
 
         <div class="panel-header">
@@ -49,212 +53,399 @@
         <form id="screeningForm">
 
           <div class="field-group">
-            <label class="field-label">Resume File</label>
-
+            <label class="field-label">Resume File (PDF, DOCX, TXT · max 5 MB)</label>
             <div class="upload-zone" id="dropZone">
               <input type="file" id="resumeFile" name="resume_file" class="file-input" accept=".pdf,.docx,.txt">
-
               <label for="resumeFile" class="upload-label">
-                <span>📄 Drag & Drop or Click to Upload</span>
+                <span class="upload-icon">📄</span>
+                <span>Drag & Drop or Click to Upload</span>
+                <span class="upload-hint">PDF · DOCX · TXT</span>
               </label>
-
-              <p id="fileNameDisplay" hidden></p>
+              <div id="fileNameDisplay" class="file-name-display hidden"></div>
             </div>
           </div>
 
           <div class="field-group">
-            <label class="field-label">Or Paste Resume</label>
-            <textarea id="resumeText" name="resume_text" class="jd-textarea" placeholder="Paste resume text here..."></textarea>
+            <label class="field-label">Or Paste Resume Text</label>
+            <textarea id="resumeText" name="resume_text" class="jd-textarea"
+                      placeholder="Paste resume text here…" rows="5"></textarea>
+          </div>
+
+          <div class="divider"></div>
+
+          <div class="panel-header mt-0">
+            <span class="step-badge">02</span>
+            <h2>Job Description</h2>
           </div>
 
           <div class="field-group">
-            <div class="panel-header">
-              <span class="step-badge">02</span>
-              <h2>Job Description</h2>
-            </div>
-
-            <textarea id="jobDescription" name="job_description" class="jd-textarea" placeholder="Paste job description here..."></textarea>
+            <label class="field-label">Paste the full job description</label>
+            <textarea id="jobDescription" name="job_description" class="jd-textarea"
+                      placeholder="Paste job description here…" rows="7"></textarea>
           </div>
 
-          <button type="submit" class="analyze-btn">🚀 Analyze Resume</button>
+          <button type="submit" class="analyze-btn" id="analyzeBtn">
+            🚀 Analyze Resume
+          </button>
 
         </form>
       </section>
 
-      <!-- RIGHT PANEL -->
+      <!-- RIGHT: RESULTS PANEL -->
       <section class="panel panel-results">
 
+        <!-- Empty state -->
         <div id="emptyState" class="empty-state">
-          <p>📊 Results will appear here</p>
+          <div class="empty-icon">📊</div>
+          <p>Your analysis results will appear here</p>
+          <p class="text-muted" style="font-size:0.8rem;">Upload a resume and paste a job description to start</p>
         </div>
 
-        <div id="loader" hidden>
-          <p>⏳ Analyzing Resume...</p>
+        <!-- Loader -->
+        <div id="loader" class="loader-wrap hidden">
+          <div class="spinner"></div>
+          <p>Analyzing your resume…</p>
         </div>
 
-        <div id="resultsContent" hidden>
+        <!-- Results -->
+        <div id="resultsContent" class="hidden">
 
-          <h2>📄 Analysis Report</h2>
+          <div class="results-header">
+            <h2>📄 Analysis Report</h2>
+            <button onclick="downloadReport()" class="btn btn-secondary btn-sm" id="downloadBtn">
+              ⬇ Download PDF
+            </button>
+          </div>
 
-          <!-- ✅ DOWNLOAD BUTTON -->
-          <button onclick="downloadReport()" class="analyze-btn">
-            📄 Download Report
-          </button>
-
-          <!-- Scores -->
-          <div class="scores-row">
-            <div class="score-tile">
-              <h3>Match</h3>
-              <span id="matchScore">0%</span>
+          <!-- Score Ring + Match / ATS / Level -->
+          <div class="score-ring-wrap" style="flex-direction:column;align-items:center;gap:6px;">
+            <div class="score-ring" id="scoreRingWrap">
+              <svg width="120" height="120" viewBox="0 0 120 120">
+                <circle cx="60" cy="60" r="50" fill="none" stroke="var(--border)" stroke-width="10"/>
+                <circle id="scoreRingArc" cx="60" cy="60" r="50" fill="none"
+                        stroke="#6ee7b7" stroke-width="10"
+                        stroke-linecap="round"
+                        stroke-dasharray="314" stroke-dashoffset="314"
+                        style="transition: stroke-dashoffset 1.2s cubic-bezier(.34,1.56,.64,1)"/>
+              </svg>
+              <div class="score-ring-value" id="ringValue">0%</div>
             </div>
+            <span style="font-size:0.75rem;color:var(--text-muted);">Match Score</span>
+          </div>
 
+          <div class="scores-row" style="margin-bottom:20px;">
             <div class="score-tile">
-              <h3>ATS</h3>
-              <span id="atsScore">0%</span>
+              <h3>ATS Score</h3>
+              <div class="score-value" id="atsOverall" style="font-size:1.4rem;">—</div>
             </div>
-
             <div class="score-tile">
               <h3>Level</h3>
-              <span id="matchLevel">-</span>
+              <div class="score-value" id="matchLevel" style="font-size:1.2rem;">—</div>
+            </div>
+            <div class="score-tile">
+              <h3>Words</h3>
+              <div class="score-value" id="wordCount" style="font-size:1.4rem;">—</div>
             </div>
           </div>
 
-          <!-- Keywords -->
-          <div class="kw-grid">
-            <div>
-              <h4>Matching Keywords</h4>
-              <div id="matchingKeywords"></div>
-            </div>
+          <!-- Resume Stats -->
+          <div class="section-heading">Resume Stats</div>
+          <div class="stats-strip" id="statsStrip"></div>
 
-            <div>
-              <h4>Missing Keywords</h4>
-              <div id="missingKeywords"></div>
-            </div>
-          </div>
+          <!-- ATS Breakdown bars -->
+          <div class="section-heading">ATS Breakdown</div>
+          <div class="ats-breakdown" id="atsBreakdown"></div>
+
+          <div class="divider"></div>
 
           <!-- Skills -->
           <div class="kw-grid">
-            <div>
-              <h4>Detected Skills</h4>
-              <div id="resumeSkills"></div>
+            <div class="kw-section">
+              <h4 class="section-heading">Detected Skills</h4>
+              <div class="tag-wrap" id="resumeSkillsWrap"></div>
             </div>
-
-            <div>
-              <h4>Missing Skills + Recommendations</h4>
-              <div id="missingSkills"></div>
+            <div class="kw-section">
+              <h4 class="section-heading">Missing Skills</h4>
+              <div class="tag-wrap" id="missingSkillsWrap"></div>
             </div>
           </div>
 
-        </div>
+          <div class="divider"></div>
 
+          <!-- Keywords -->
+          <div class="kw-grid">
+            <div class="kw-section">
+              <h4 class="section-heading">Matching Keywords</h4>
+              <div class="tag-wrap" id="matchingKeywords"></div>
+            </div>
+            <div class="kw-section">
+              <h4 class="section-heading">Missing Keywords</h4>
+              <div class="tag-wrap" id="missingKeywords"></div>
+            </div>
+          </div>
+
+          <div class="divider"></div>
+
+          <!-- Recommendations -->
+          <div class="section-heading">Recommendations</div>
+          <ul class="rec-list" id="recList"></ul>
+
+        </div>
       </section>
 
     </div>
   </main>
 
-  <footer class="site-footer">
-    <p>Built by Suhas 🚀</p>
-  </footer>
-
+  <footer class="site-footer">Built by Suhas H N 🚀 · ResumeIQ v2.0</footer>
 </div>
 
+<!-- TOAST CONTAINER -->
+<div class="toast-container" id="toastContainer"></div>
+
 <script>
+/* ─────────────────────────────────────────────
+   THEME
+───────────────────────────────────────────── */
+const themeToggle = document.getElementById('themeToggle');
+function applyTheme(t) {
+  document.body.classList.toggle('light-mode', t === 'light');
+  localStorage.setItem('theme', t);
+  themeToggle.textContent = t === 'light' ? '🌙' : '☀️';
+}
+applyTheme(localStorage.getItem('theme') || 'dark');
+themeToggle.onclick = () => applyTheme(document.body.classList.contains('light-mode') ? 'dark' : 'light');
 
-// THEME FIX
-const toggle = document.getElementById("themeToggle");
-
-if(localStorage.getItem("theme") === "dark"){
-  document.body.classList.add("dark-mode");
+/* ─────────────────────────────────────────────
+   TOAST
+───────────────────────────────────────────── */
+function showToast(msg, type='info', dur=3500) {
+  const tc  = document.getElementById('toastContainer');
+  const div = document.createElement('div');
+  div.className = `toast ${type}`;
+  div.innerHTML = `<span>${msg}</span>`;
+  tc.appendChild(div);
+  setTimeout(() => { div.style.opacity='0'; div.style.transform='translateX(100%)'; div.style.transition='0.35s'; setTimeout(()=>div.remove(), 360); }, dur);
 }
 
-toggle.onclick = () => {
-  document.body.classList.toggle("dark-mode");
-  localStorage.setItem("theme", document.body.classList.contains("dark-mode") ? "dark" : "light");
-};
+/* ─────────────────────────────────────────────
+   AUTH STATE
+───────────────────────────────────────────── */
+async function checkAuth() {
+  try {
+    const res  = await fetch('/me');
+    const data = await res.json();
+    const chip     = document.getElementById('welcomeChip');
+    const loginBtn = document.getElementById('loginBtn');
+    const signupBtn= document.getElementById('signupBtn');
+    const logoutBtn= document.getElementById('logoutBtn');
+    if (data.logged_in) {
+      chip.textContent = '👤 ' + data.name;
+      chip.classList.remove('hidden');
+      loginBtn.classList.add('hidden');
+      signupBtn.classList.add('hidden');
+      logoutBtn.classList.remove('hidden');
+    }
+  } catch {}
+}
+checkAuth();
 
-// USER
-const user = localStorage.getItem("user");
-if(user){
-  document.getElementById("welcomeUser").textContent = "Welcome, " + user;
+async function doLogout() {
+  await fetch('/logout', { method: 'POST' });
+  showToast('Signed out', 'info');
+  setTimeout(() => location.reload(), 700);
 }
 
-// FILE DISPLAY
-const fileInput = document.getElementById("resumeFile");
-const fileDisplay = document.getElementById("fileNameDisplay");
+/* ─────────────────────────────────────────────
+   FILE DROP ZONE
+───────────────────────────────────────────── */
+const dropZone  = document.getElementById('dropZone');
+const fileInput = document.getElementById('resumeFile');
+const fileDisplay = document.getElementById('fileNameDisplay');
 
-fileInput.addEventListener("change", e=>{
-  const file = e.target.files[0];
-  if(file){
-    fileDisplay.textContent = "Selected: " + file.name;
-    fileDisplay.hidden = false;
+fileInput.addEventListener('change', e => {
+  const f = e.target.files[0];
+  if (f) {
+    fileDisplay.innerHTML = `✓ ${f.name}`;
+    fileDisplay.classList.remove('hidden');
   }
 });
 
-// FORM SUBMIT
-document.getElementById("screeningForm").addEventListener("submit", async e=>{
+['dragover','dragenter'].forEach(ev => dropZone.addEventListener(ev, e => { e.preventDefault(); dropZone.classList.add('dragover'); }));
+['dragleave','drop'].forEach(ev => dropZone.addEventListener(ev, () => dropZone.classList.remove('dragover')));
+dropZone.addEventListener('drop', e => {
+  e.preventDefault();
+  const f = e.dataTransfer.files[0];
+  if (f) {
+    fileInput.files = e.dataTransfer.files;
+    fileDisplay.innerHTML = `✓ ${f.name}`;
+    fileDisplay.classList.remove('hidden');
+  }
+});
+
+/* ─────────────────────────────────────────────
+   SCORE RING
+───────────────────────────────────────────── */
+function setScoreRing(pct) {
+  const circ = 2 * Math.PI * 50;   // r=50
+  const arc  = document.getElementById('scoreRingArc');
+  const val  = document.getElementById('ringValue');
+
+  const color = pct >= 80 ? '#10b981' : pct >= 60 ? '#f59e0b' : pct >= 40 ? '#f97316' : '#ef4444';
+  arc.setAttribute('stroke', color);
+  setTimeout(() => {
+    arc.style.strokeDashoffset = circ - (pct / 100) * circ;
+  }, 50);
+
+  // Animate number
+  let cur = 0;
+  const step = pct / 40;
+  const timer = setInterval(() => {
+    cur = Math.min(cur + step, pct);
+    val.textContent = Math.round(cur) + '%';
+    val.style.color = color;
+    if (cur >= pct) clearInterval(timer);
+  }, 20);
+}
+
+/* ─────────────────────────────────────────────
+   ATS BAR RENDER
+───────────────────────────────────────────── */
+const ATS_LABELS = {
+  keyword_density: 'Keyword Density',
+  skill_match:     'Skill Match',
+  sections:        'Section Structure',
+  action_verbs:    'Action Verbs',
+  length:          'Resume Length',
+};
+
+function renderATSBars(ats) {
+  const wrap = document.getElementById('atsBreakdown');
+  wrap.innerHTML = '';
+  Object.entries(ATS_LABELS).forEach(([key, label]) => {
+    const val   = ats[key] || 0;
+    const color = val >= 70 ? '#10b981' : val >= 40 ? '#f59e0b' : '#ef4444';
+    wrap.innerHTML += `
+      <div class="ats-row">
+        <span class="ats-label">${label}</span>
+        <div class="ats-bar-wrap">
+          <div class="ats-bar" id="bar_${key}" style="width:0%;background:${color};"></div>
+        </div>
+        <span class="ats-pct">${val}%</span>
+      </div>`;
+  });
+  // Animate bars
+  setTimeout(() => {
+    Object.keys(ATS_LABELS).forEach(key => {
+      const el = document.getElementById(`bar_${key}`);
+      if (el) el.style.width = (ats[key] || 0) + '%';
+    });
+  }, 80);
+}
+
+/* ─────────────────────────────────────────────
+   FORM SUBMIT
+───────────────────────────────────────────── */
+let lastResult = null;
+
+document.getElementById('screeningForm').addEventListener('submit', async e => {
   e.preventDefault();
 
   const formData = new FormData(e.target);
+  const resume   = document.getElementById('resumeText').value.trim();
+  const jd       = document.getElementById('jobDescription').value.trim();
 
-  document.getElementById("loader").hidden = false;
+  if (!fileInput.files[0] && !resume) { showToast('⚠️ Upload a resume or paste resume text', 'error'); return; }
+  if (!jd) { showToast('⚠️ Paste a job description', 'error'); return; }
 
-  const res = await fetch("/analyze", {
-    method: "POST",
-    body: formData
-  });
+  const btn = document.getElementById('analyzeBtn');
+  btn.disabled = true;
+  btn.textContent = '⏳ Analyzing…';
+  document.getElementById('emptyState').classList.add('hidden');
+  document.getElementById('loader').classList.remove('hidden');
+  document.getElementById('resultsContent').classList.add('hidden');
 
-  const data = await res.json();
-  document.getElementById("loader").hidden = true;
+  try {
+    const res  = await fetch('/analyze', { method: 'POST', body: formData });
+    const data = await res.json();
 
-  if(data.error){
-    alert(data.error);
-    return;
+    document.getElementById('loader').classList.add('hidden');
+
+    if (data.error) { showToast('❌ ' + data.error, 'error'); document.getElementById('emptyState').classList.remove('hidden'); return; }
+
+    lastResult = data;
+    renderResults(data);
+    showToast('✅ Analysis complete!', 'success');
+
+  } catch (err) {
+    document.getElementById('loader').classList.add('hidden');
+    document.getElementById('emptyState').classList.remove('hidden');
+    showToast('❌ Server error. Is the app running?', 'error');
+  } finally {
+    btn.disabled = false;
+    btn.textContent = '🚀 Analyze Resume';
   }
-
-  document.getElementById("resultsContent").hidden = false;
-
-  document.getElementById("matchScore").textContent = data.match_score + "%";
-  document.getElementById("matchLevel").textContent = data.level;
-
-  document.getElementById("matchingKeywords").innerHTML =
-    data.matching_keywords.map(k => `<span>${k}</span>`).join("");
-
-  document.getElementById("missingKeywords").innerHTML =
-    data.missing_keywords.map(k => `<span>${k}</span>`).join("");
-
-  document.getElementById("resumeSkills").innerHTML =
-    (data.resume_skills || []).map(s => `<span>${s}</span>`).join("");
-
-  document.getElementById("missingSkills").innerHTML =
-    (data.missing_skills || []).map(s => `<span>${s}</span>`).join("") +
-    (data.recommendations ? `<ul>${data.recommendations.map(r=>`<li>${r}</li>`).join("")}</ul>` : "");
 });
 
-// DOWNLOAD REPORT
-async function downloadReport(){
-  const data = {
-    match_score: document.getElementById("matchScore").textContent,
-    level: document.getElementById("matchLevel").textContent,
-    missing_keywords: Array.from(document.querySelectorAll("#missingKeywords span")).map(e=>e.textContent),
-    recommendations: Array.from(document.querySelectorAll("#missingSkills li")).map(e=>e.textContent)
-  };
+function renderResults(data) {
+  // Score ring
+  setScoreRing(data.match_score);
 
-  const res = await fetch("/download-report", {
-    method: "POST",
-    headers: {"Content-Type": "application/json"},
-    body: JSON.stringify(data)
-  });
+  // Tiles
+  const ats = data.ats_scores || {};
+  document.getElementById('atsOverall').textContent = (ats.overall || 0) + '%';
+  document.getElementById('matchLevel').textContent = data.level || '—';
+  document.getElementById('wordCount').textContent  = (data.stats || {}).word_count || '—';
 
-  const blob = await res.blob();
-  const url = window.URL.createObjectURL(blob);
+  // Stats strip
+  const stats = data.stats || {};
+  const strip = document.getElementById('statsStrip');
+  strip.innerHTML = [
+    ['Words',      stats.word_count],
+    ['Characters', stats.char_count],
+    ['Sentences',  stats.sentence_count],
+    ['Avg word',   stats.avg_word_len ? stats.avg_word_len + ' chars' : '—'],
+    ['Readability',stats.readability !== undefined ? stats.readability + ' / 100' : '—'],
+  ].map(([k,v]) => `<div class="stat-chip"><strong>${v ?? '—'}</strong> ${k}</div>`).join('');
 
-  const a = document.createElement("a");
-  a.href = url;
-  a.download = "Resume_Report.pdf";
-  a.click();
+  // ATS bars
+  renderATSBars(ats);
+
+  // Tags
+  const mkTags = (arr, cls) => arr.length ? arr.map(t=>`<span class="tag ${cls}">${t}</span>`).join('') : '<span class="text-muted" style="font-size:0.8rem;">None detected</span>';
+  document.getElementById('resumeSkillsWrap').innerHTML = mkTags(data.resume_skills || [], 'skill');
+  document.getElementById('missingSkillsWrap').innerHTML= mkTags(data.missing_skills || [], 'warn');
+  document.getElementById('matchingKeywords').innerHTML  = mkTags(data.matching_keywords || [], 'match');
+  document.getElementById('missingKeywords').innerHTML   = mkTags(data.missing_keywords  || [], 'miss');
+
+  // Recommendations
+  const recs = data.recommendations || [];
+  document.getElementById('recList').innerHTML = recs.map(r=>`<li>${r}</li>`).join('') || '<li>No recommendations — great job!</li>';
+
+  document.getElementById('resultsContent').classList.remove('hidden');
 }
 
+/* ─────────────────────────────────────────────
+   DOWNLOAD PDF
+───────────────────────────────────────────── */
+async function downloadReport() {
+  if (!lastResult) { showToast('Run an analysis first', 'info'); return; }
+  const btn = document.getElementById('downloadBtn');
+  btn.disabled = true; btn.textContent = '⏳ Generating…';
+  try {
+    const res  = await fetch('/download-report', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(lastResult),
+    });
+    const blob = await res.blob();
+    const url  = URL.createObjectURL(blob);
+    const a    = document.createElement('a');
+    a.href = url; a.download = 'ResumeIQ_Report.pdf'; a.click();
+    URL.revokeObjectURL(url);
+    showToast('✅ Report downloaded', 'success');
+  } catch { showToast('❌ Download failed', 'error'); }
+  finally  { btn.disabled = false; btn.textContent = '⬇ Download PDF'; }
+}
 </script>
-
 </body>
 </html>
