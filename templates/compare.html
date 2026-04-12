@@ -1,0 +1,166 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Compare Resumes — ResumeIQ</title>
+  <link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;700;800&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+</head>
+<body>
+<div class="bg-grid"></div>
+<div class="bg-orb orb-1"></div>
+<div class="bg-orb orb-2"></div>
+
+<div class="app-shell">
+  <header class="site-header">
+    <div class="logo">
+      <div class="logo-mark">R</div>
+      <span class="logo-text">ResumeIQ</span>
+      <span class="logo-badge">Compare</span>
+    </div>
+    <div style="display:flex;gap:10px;align-items:center;">
+      <button id="themeToggle" class="theme-toggle">🌙</button>
+      <a href="/" class="btn btn-ghost btn-sm">← Analyzer</a>
+    </div>
+  </header>
+
+  <main>
+    <div style="max-width:900px;margin:0 auto;">
+
+      <div class="panel" style="margin-bottom:20px;">
+        <div class="panel-header">
+          <span class="step-badge">⚖️</span>
+          <h2>Side-by-Side Resume Comparison</h2>
+        </div>
+        <p style="color:var(--text-secondary);font-size:0.875rem;">
+          Compare two resumes against the same job description to see which is a better fit.
+        </p>
+      </div>
+
+      <form id="compareForm">
+
+        <!-- Job Description -->
+        <div class="panel" style="margin-bottom:20px;">
+          <label class="field-label">Job Description (shared)</label>
+          <textarea name="job_description" class="jd-textarea" placeholder="Paste the job description here…" rows="5" required></textarea>
+        </div>
+
+        <!-- Two resume panels -->
+        <div class="compare-grid" style="margin-bottom:20px;">
+          <!-- Resume A -->
+          <div class="panel">
+            <div class="panel-header">
+              <span class="step-badge" style="background:linear-gradient(135deg,#6ee7b7,#6366f1);">A</span>
+              <h2>Resume A</h2>
+            </div>
+            <div class="field-group">
+              <label class="field-label">Upload File</label>
+              <div class="upload-zone" style="padding:16px;">
+                <input type="file" name="resume_a_file" class="file-input" accept=".pdf,.docx,.txt" id="fileA">
+                <label for="fileA" class="upload-label">
+                  <span>📄 Upload Resume A</span>
+                </label>
+                <div id="fileAName" class="file-name-display hidden"></div>
+              </div>
+            </div>
+            <div class="field-group">
+              <label class="field-label">Or Paste Text</label>
+              <textarea name="resume_a" class="jd-textarea" placeholder="Paste resume A text…" rows="5"></textarea>
+            </div>
+          </div>
+
+          <!-- Resume B -->
+          <div class="panel">
+            <div class="panel-header">
+              <span class="step-badge" style="background:linear-gradient(135deg,#f59e0b,#ef4444);">B</span>
+              <h2>Resume B</h2>
+            </div>
+            <div class="field-group">
+              <label class="field-label">Upload File</label>
+              <div class="upload-zone" style="padding:16px;">
+                <input type="file" name="resume_b_file" class="file-input" accept=".pdf,.docx,.txt" id="fileB">
+                <label for="fileB" class="upload-label">
+                  <span>📄 Upload Resume B</span>
+                </label>
+                <div id="fileBName" class="file-name-display hidden"></div>
+              </div>
+            </div>
+            <div class="field-group">
+              <label class="field-label">Or Paste Text</label>
+              <textarea name="resume_b" class="jd-textarea" placeholder="Paste resume B text…" rows="5"></textarea>
+            </div>
+          </div>
+        </div>
+
+        <button type="submit" class="analyze-btn" id="compareBtn">⚖️ Compare Resumes</button>
+      </form>
+
+      <!-- RESULTS -->
+      <div id="compareResults" class="hidden" style="margin-top:24px;">
+        <div id="winnerBanner" class="winner-banner"></div>
+        <div class="compare-result-grid">
+          <div class="panel" id="resultA"></div>
+          <div class="panel" id="resultB"></div>
+        </div>
+      </div>
+
+    </div>
+  </main>
+
+  <footer class="site-footer">ResumeIQ v2.0 — Built by Suhas H N 🚀</footer>
+</div>
+
+<div class="toast-container" id="toastContainer"></div>
+
+<script>
+const themeToggle=document.getElementById('themeToggle');
+function applyTheme(t){document.body.classList.toggle('light-mode',t==='light');localStorage.setItem('theme',t);themeToggle.textContent=t==='light'?'🌙':'☀️';}
+applyTheme(localStorage.getItem('theme')||'dark');
+themeToggle.onclick=()=>applyTheme(document.body.classList.contains('light-mode')?'dark':'light');
+
+function showToast(msg,type='info'){const tc=document.getElementById('toastContainer');const d=document.createElement('div');d.className=`toast ${type}`;d.innerHTML=`<span>${msg}</span>`;tc.appendChild(d);setTimeout(()=>{d.style.opacity='0';d.style.transform='translateX(100%)';d.style.transition='0.35s';setTimeout(()=>d.remove(),360);},3500);}
+
+document.getElementById('fileA').addEventListener('change',e=>{const f=e.target.files[0];if(f){const d=document.getElementById('fileAName');d.innerHTML='✓ '+f.name;d.classList.remove('hidden');}});
+document.getElementById('fileB').addEventListener('change',e=>{const f=e.target.files[0];if(f){const d=document.getElementById('fileBName');d.innerHTML='✓ '+f.name;d.classList.remove('hidden');}});
+
+document.getElementById('compareForm').addEventListener('submit', async e => {
+  e.preventDefault();
+  const btn=document.getElementById('compareBtn');
+  btn.disabled=true; btn.textContent='⏳ Comparing…';
+  try {
+    const res  = await fetch('/compare', {method:'POST', body:new FormData(e.target)});
+    const data = await res.json();
+    if (data.error) { showToast('❌ '+data.error,'error'); return; }
+
+    const winner = data.winner;
+    document.getElementById('winnerBanner').textContent = `🏆 Resume ${winner} is a better match!`;
+
+    ['A','B'].forEach(label => {
+      const r   = label==='A' ? data.resume_a : data.resume_b;
+      const col = label==='A' ? '#6ee7b7' : '#f59e0b';
+      const sc  = r.match_score;
+      const lvlColor = sc>=80?'#10b981':sc>=60?'#f59e0b':sc>=40?'#f97316':'#ef4444';
+
+      document.getElementById(`result${label}`).innerHTML = `
+        <div style="display:flex;align-items:center;gap:12px;margin-bottom:14px;">
+          <div style="width:56px;height:56px;border-radius:50%;background:rgba(0,0,0,0.2);border:3px solid ${lvlColor};display:flex;align-items:center;justify-content:center;font-weight:800;font-family:'Syne',sans-serif;font-size:1rem;color:${lvlColor};">${sc}%</div>
+          <div>
+            <div style="font-weight:700;font-size:1.05rem;">Resume ${label} ${winner===label?'🏆':''}</div>
+            <div style="font-size:0.8rem;color:var(--text-muted);">Level: ${r.level} · ATS: ${r.ats_score}%</div>
+          </div>
+        </div>
+        <div class="section-heading">Detected Skills</div>
+        <div class="tag-wrap">${(r.skills||[]).map(s=>`<span class="tag skill">${s}</span>`).join('')||'<span class="text-muted">None</span>'}</div>
+      `;
+    });
+
+    document.getElementById('compareResults').classList.remove('hidden');
+    document.getElementById('compareResults').scrollIntoView({behavior:'smooth'});
+    showToast('✅ Comparison complete!','success');
+  } catch { showToast('❌ Server error','error'); }
+  finally { btn.disabled=false; btn.textContent='⚖️ Compare Resumes'; }
+});
+</script>
+</body>
+</html>
