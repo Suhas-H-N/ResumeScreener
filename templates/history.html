@@ -1,0 +1,138 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>History — ResumeIQ</title>
+  <link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;700;800&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+</head>
+<body>
+<div class="bg-grid"></div>
+<div class="bg-orb orb-1"></div>
+<div class="bg-orb orb-2"></div>
+
+<div class="app-shell">
+  <header class="site-header">
+    <div class="logo">
+      <div class="logo-mark">R</div>
+      <span class="logo-text">ResumeIQ</span>
+      <span class="logo-badge">History</span>
+    </div>
+    <div style="display:flex;gap:10px;align-items:center;">
+      <button id="themeToggle" class="theme-toggle">🌙</button>
+      <a href="/" class="btn btn-ghost btn-sm">← Analyzer</a>
+    </div>
+  </header>
+
+  <main>
+    <div style="max-width:860px;margin:0 auto;">
+
+      <div class="panel" style="margin-bottom:20px;">
+        <div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:12px;">
+          <div>
+            <h2 style="font-family:'Syne',sans-serif;font-size:1.2rem;margin-bottom:4px;">📋 Analysis History</h2>
+            <p style="color:var(--text-secondary);font-size:0.875rem;">Your last 20 resume analyses. Login to save history.</p>
+          </div>
+          <button onclick="clearAll()" class="btn btn-danger btn-sm" id="clearBtn">🗑 Clear All</button>
+        </div>
+      </div>
+
+      <!-- Not logged in -->
+      <div id="notLoggedIn" class="panel hidden" style="text-align:center;padding:48px 20px;">
+        <div style="font-size:2.5rem;margin-bottom:14px;">🔐</div>
+        <h3 style="font-family:'Syne',sans-serif;margin-bottom:8px;">Sign in to view history</h3>
+        <p style="color:var(--text-secondary);font-size:0.875rem;margin-bottom:20px;">Analysis history is saved automatically when you're logged in.</p>
+        <a href="/login-page" class="btn btn-primary">Sign In</a>
+      </div>
+
+      <!-- History list -->
+      <div id="historyList" class="history-grid hidden"></div>
+
+      <!-- Empty -->
+      <div id="emptyHistory" class="panel hidden" style="text-align:center;padding:48px 20px;">
+        <div style="font-size:2.5rem;margin-bottom:14px;">📊</div>
+        <h3 style="font-family:'Syne',sans-serif;margin-bottom:8px;">No history yet</h3>
+        <p style="color:var(--text-secondary);font-size:0.875rem;margin-bottom:20px;">Run an analysis on the main page to see it here.</p>
+        <a href="/" class="btn btn-primary">Analyze Resume</a>
+      </div>
+
+    </div>
+  </main>
+
+  <footer class="site-footer">ResumeIQ v2.0 — Built by Suhas H N 🚀</footer>
+</div>
+
+<div class="toast-container" id="toastContainer"></div>
+
+<script>
+const themeToggle=document.getElementById('themeToggle');
+function applyTheme(t){document.body.classList.toggle('light-mode',t==='light');localStorage.setItem('theme',t);themeToggle.textContent=t==='light'?'🌙':'☀️';}
+applyTheme(localStorage.getItem('theme')||'dark');
+themeToggle.onclick=()=>applyTheme(document.body.classList.contains('light-mode')?'dark':'light');
+
+function showToast(msg,type='info'){const tc=document.getElementById('toastContainer');const d=document.createElement('div');d.className=`toast ${type}`;d.innerHTML=`<span>${msg}</span>`;tc.appendChild(d);setTimeout(()=>{d.style.opacity='0';d.style.transform='translateX(100%)';d.style.transition='0.35s';setTimeout(()=>d.remove(),360);},3500);}
+
+function scoreColor(s){return s>=80?'#10b981':s>=60?'#f59e0b':s>=40?'#f97316':'#ef4444';}
+function levelLabel(s){return s>=80?'Excellent':s>=60?'Good':s>=40?'Average':'Low';}
+function fmtDate(iso){return new Date(iso).toLocaleDateString('en-US',{month:'short',day:'numeric',year:'numeric',hour:'2-digit',minute:'2-digit'});}
+
+async function loadHistory() {
+  const meRes = await fetch('/me');
+  const me    = await meRes.json();
+
+  if (!me.logged_in) {
+    document.getElementById('notLoggedIn').classList.remove('hidden');
+    document.getElementById('clearBtn').classList.add('hidden');
+    return;
+  }
+
+  const res  = await fetch('/history');
+  const data = await res.json();
+
+  const list = document.getElementById('historyList');
+
+  if (!data.length) {
+    document.getElementById('emptyHistory').classList.remove('hidden');
+    return;
+  }
+
+  list.classList.remove('hidden');
+  list.innerHTML = data.map(entry => {
+    const sc  = entry.match_score;
+    const col = scoreColor(sc);
+    return `
+      <div class="history-card">
+        <div class="history-score" style="border-color:${col};color:${col};">${sc}%</div>
+        <div class="history-info">
+          <div class="history-badges">
+            <span class="tag" style="font-size:0.75rem;">${levelLabel(sc)}</span>
+            <span class="tag" style="font-size:0.75rem;">ATS ${entry.ats_score}%</span>
+          </div>
+          <div class="history-job">${entry.job_snippet || '(no snippet)'}</div>
+          <div class="history-date">🕐 ${fmtDate(entry.date)}</div>
+        </div>
+        <button onclick="deleteEntry('${entry.id}')" class="btn btn-ghost btn-sm" title="Delete">🗑</button>
+      </div>`;
+  }).join('');
+}
+
+async function deleteEntry(id) {
+  await fetch(`/history/${id}`, {method:'DELETE'});
+  showToast('Entry deleted','info');
+  loadHistory();
+}
+
+async function clearAll() {
+  if (!confirm('Delete all history?')) return;
+  const res  = await fetch('/history');
+  const data = await res.json();
+  await Promise.all(data.map(e=>fetch(`/history/${e.id}`,{method:'DELETE'})));
+  showToast('History cleared','info');
+  loadHistory();
+}
+
+loadHistory();
+</script>
+</body>
+</html>
