@@ -1,109 +1,119 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <title>Signup — ResumeIQ</title>
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-
-  <!-- Fonts -->
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Sign Up — ResumeIQ</title>
   <link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;700;800&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet">
-
-  <!-- CSS -->
   <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
 </head>
-
 <body>
+<div class="bg-grid"></div>
+<div class="bg-orb orb-1"></div>
+<div class="bg-orb orb-2"></div>
 
 <div class="app-shell">
-
-  <!-- HEADER -->
   <header class="site-header">
     <div class="logo">
-      <span class="logo-mark">R</span>
+      <div class="logo-mark">R</div>
       <span class="logo-text">ResumeIQ</span>
     </div>
-
-    <div style="display:flex; gap:10px; align-items:center;">
+    <div style="display:flex;gap:10px;align-items:center;">
       <button id="themeToggle" class="theme-toggle">🌙</button>
-      <a href="/" class="btn btn-secondary">← Back</a>
+      <a href="/" class="btn btn-ghost btn-sm">← Home</a>
     </div>
   </header>
 
-  <!-- SIGNUP CARD -->
   <div class="auth-page">
-
     <h2>🚀 Create Account</h2>
-    <p style="color: var(--text-secondary); font-size: 14px;">
-      Start your AI-powered resume journey
-    </p>
+    <p class="auth-sub">Start your AI-powered resume journey</p>
 
-    <input type="text" id="name" placeholder="Enter your name" required>
-    <input type="email" id="email" placeholder="Enter your email" required>
-    <input type="password" id="password" placeholder="Create password" required>
+    <div id="errorMsg" style="color:var(--danger);font-size:0.85rem;margin-bottom:12px;min-height:20px;text-align:center;"></div>
 
-    <button onclick="signup()" class="btn btn-primary">Sign Up</button>
+    <div class="field-group">
+      <label class="field-label">Full Name</label>
+      <input type="text" id="name" class="field-input" placeholder="Your name" autocomplete="name" required/>
+    </div>
 
-    <p style="font-size: 14px;">
-      Already have an account?
-      <a href="/login-page" style="color: var(--accent);">Login</a>
-    </p>
+    <div class="field-group">
+      <label class="field-label">Email</label>
+      <input type="email" id="email" class="field-input" placeholder="you@example.com" autocomplete="email" required/>
+    </div>
 
+    <div class="field-group">
+      <label class="field-label">Password <span style="color:var(--text-muted);font-size:0.78rem;">(min 6 characters)</span></label>
+      <div style="position:relative;">
+        <input type="password" id="password" class="field-input" placeholder="••••••••" autocomplete="new-password" required style="padding-right:44px;"/>
+        <button type="button" onclick="togglePw()"
+                style="position:absolute;right:12px;top:50%;transform:translateY(-50%);background:none;border:none;cursor:pointer;font-size:1rem;color:var(--text-muted);" id="pwToggle">👁</button>
+      </div>
+      <div id="pwStrength" style="height:4px;border-radius:4px;margin-top:6px;background:var(--border);overflow:hidden;">
+        <div id="pwBar" style="height:100%;width:0%;transition:width 0.3s,background 0.3s;border-radius:4px;"></div>
+      </div>
+    </div>
+
+    <button onclick="doSignup()" class="btn btn-primary btn-full" id="signupBtn" style="margin-top:8px;">Create Account</button>
+
+    <p class="auth-footer">Already have an account? <a href="/login-page">Sign in</a></p>
   </div>
-
 </div>
 
-<!-- SCRIPT -->
+<div class="toast-container" id="toastContainer"></div>
+
 <script>
+const themeToggle = document.getElementById('themeToggle');
+function applyTheme(t) { document.body.classList.toggle('light-mode',t==='light'); localStorage.setItem('theme',t); themeToggle.textContent=t==='light'?'🌙':'☀️'; }
+applyTheme(localStorage.getItem('theme')||'dark');
+themeToggle.onclick = ()=>applyTheme(document.body.classList.contains('light-mode')?'dark':'light');
 
-// 🌙 THEME FIX
-const toggle = document.getElementById("themeToggle");
-
-if(localStorage.getItem("theme") === "dark"){
-  document.body.classList.add("dark-mode");
+function togglePw() {
+  const inp=document.getElementById('password');
+  const btn=document.getElementById('pwToggle');
+  inp.type=inp.type==='password'?'text':'password';
+  btn.textContent=inp.type==='password'?'👁':'🙈';
 }
 
-toggle.onclick = () => {
-  document.body.classList.toggle("dark-mode");
-  localStorage.setItem("theme", document.body.classList.contains("dark-mode") ? "dark" : "light");
-};
+document.getElementById('password').addEventListener('input', function() {
+  const v=this.value, bar=document.getElementById('pwBar');
+  let score=0;
+  if(v.length>=6) score++;
+  if(v.length>=10) score++;
+  if(/[A-Z]/.test(v)&&/[0-9]/.test(v)) score++;
+  const colors=['','#ef4444','#f59e0b','#10b981'];
+  const widths=['0%','33%','66%','100%'];
+  bar.style.width=widths[score]||'0%';
+  bar.style.background=colors[score]||'transparent';
+});
 
+function showToast(msg,type='info') {
+  const tc=document.getElementById('toastContainer');
+  const d=document.createElement('div');
+  d.className=`toast ${type}`;d.innerHTML=`<span>${msg}</span>`;tc.appendChild(d);
+  setTimeout(()=>{d.style.opacity='0';d.style.transform='translateX(100%)';d.style.transition='0.35s';setTimeout(()=>d.remove(),360);},3500);
+}
 
-// 🚀 SIGNUP FUNCTION
-async function signup() {
-  const name = document.getElementById("name").value.trim();
-  const email = document.getElementById("email").value.trim();
-  const password = document.getElementById("password").value.trim();
+async function doSignup() {
+  const name    = document.getElementById('name').value.trim();
+  const email   = document.getElementById('email').value.trim();
+  const password= document.getElementById('password').value;
+  const errEl   = document.getElementById('errorMsg');
+  const btn     = document.getElementById('signupBtn');
 
-  if (!name || !email || !password) {
-    alert("⚠️ Please fill all fields");
-    return;
-  }
+  errEl.textContent = '';
+  if (!name)              { errEl.textContent='Name is required'; return; }
+  if (!email)             { errEl.textContent='Email is required'; return; }
+  if (password.length<6)  { errEl.textContent='Password must be at least 6 characters'; return; }
 
+  btn.disabled=true; btn.textContent='Creating account…';
   try {
-    const res = await fetch("/signup", {
-      method: "POST",
-      headers: {"Content-Type": "application/json"},
-      body: JSON.stringify({ name, email, password })
-    });
-
+    const res  = await fetch('/signup', { method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify({name,email,password}) });
     const data = await res.json();
-
-    if (!res.ok) {
-      alert(data.error || "Signup failed");
-      return;
-    }
-
-    alert("✅ Signup successful! Please login.");
-
-    // Redirect to login
-    window.location.href = "/login-page";
-
-  } catch (err) {
-    alert("❌ Error: " + err.message);
-  }
+    if (!res.ok) { errEl.textContent=data.error||'Signup failed'; return; }
+    showToast('✅ Account created! Redirecting to login…','success');
+    setTimeout(()=>window.location.href='/login-page', 1200);
+  } catch { errEl.textContent='⚠️ Server not reachable'; }
+  finally  { btn.disabled=false; btn.textContent='Create Account'; }
 }
-
 </script>
-
 </body>
 </html>
