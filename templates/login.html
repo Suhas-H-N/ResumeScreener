@@ -1,110 +1,98 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <title>Login — ResumeIQ</title>
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-
-  <!-- Fonts -->
   <link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;700;800&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet">
-
-  <!-- CSS -->
   <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
 </head>
-
 <body>
+<div class="bg-grid"></div>
+<div class="bg-orb orb-1"></div>
+<div class="bg-orb orb-2"></div>
 
 <div class="app-shell">
-
-  <!-- HEADER -->
   <header class="site-header">
     <div class="logo">
-      <span class="logo-mark">R</span>
+      <div class="logo-mark">R</div>
       <span class="logo-text">ResumeIQ</span>
     </div>
-
-    <div style="display:flex; gap:10px; align-items:center;">
+    <div style="display:flex;gap:10px;align-items:center;">
       <button id="themeToggle" class="theme-toggle">🌙</button>
-      <a href="/" class="btn btn-secondary">← Back</a>
+      <a href="/" class="btn btn-ghost btn-sm">← Home</a>
     </div>
   </header>
 
-  <!-- LOGIN CARD -->
   <div class="auth-page">
-
     <h2>🔐 Welcome Back</h2>
-    <p style="color: var(--text-secondary); font-size: 14px;">
-      Login to continue your resume analysis
-    </p>
+    <p class="auth-sub">Sign in to access your analysis history</p>
 
-    <input type="email" id="email" placeholder="Enter your email" required>
-    <input type="password" id="password" placeholder="Enter your password" required>
+    <div id="errorMsg" style="color:var(--danger);font-size:0.85rem;margin-bottom:12px;min-height:20px;text-align:center;"></div>
 
-    <button onclick="login()" class="btn btn-primary">Login</button>
+    <div class="field-group">
+      <label class="field-label">Email</label>
+      <input type="email" id="email" class="field-input" placeholder="you@example.com" autocomplete="email" required/>
+    </div>
 
-    <p style="font-size: 14px;">
-      Don’t have an account?
-      <a href="/signup-page" style="color: var(--accent);">Sign up</a>
-    </p>
+    <div class="field-group">
+      <label class="field-label">Password</label>
+      <div style="position:relative;">
+        <input type="password" id="password" class="field-input" placeholder="••••••••" autocomplete="current-password" required style="padding-right:44px;"/>
+        <button type="button" id="pwToggle" onclick="togglePw()"
+                style="position:absolute;right:12px;top:50%;transform:translateY(-50%);background:none;border:none;cursor:pointer;font-size:1rem;color:var(--text-muted);">👁</button>
+      </div>
+    </div>
 
+    <button onclick="doLogin()" class="btn btn-primary btn-full" id="loginBtn" style="margin-top:8px;">Sign In</button>
+
+    <p class="auth-footer">Don't have an account? <a href="/signup-page">Create one</a></p>
   </div>
-
 </div>
 
-<!-- SCRIPT -->
+<div class="toast-container" id="toastContainer"></div>
+
 <script>
+const themeToggle = document.getElementById('themeToggle');
+function applyTheme(t) { document.body.classList.toggle('light-mode', t==='light'); localStorage.setItem('theme',t); themeToggle.textContent=t==='light'?'🌙':'☀️'; }
+applyTheme(localStorage.getItem('theme')||'dark');
+themeToggle.onclick = ()=>applyTheme(document.body.classList.contains('light-mode')?'dark':'light');
 
-// 🌙 THEME FIX (same as index)
-const toggle = document.getElementById("themeToggle");
-
-if(localStorage.getItem("theme") === "dark"){
-  document.body.classList.add("dark-mode");
+function togglePw() {
+  const inp = document.getElementById('password');
+  const btn = document.getElementById('pwToggle');
+  inp.type = inp.type==='password'?'text':'password';
+  btn.textContent = inp.type==='password'?'👁':'🙈';
 }
 
-toggle.onclick = () => {
-  document.body.classList.toggle("dark-mode");
-  localStorage.setItem("theme", document.body.classList.contains("dark-mode") ? "dark" : "light");
-};
+function showToast(msg,type='info') {
+  const tc=document.getElementById('toastContainer');
+  const d=document.createElement('div');
+  d.className=`toast ${type}`;d.innerHTML=`<span>${msg}</span>`;tc.appendChild(d);
+  setTimeout(()=>{d.style.opacity='0';d.style.transform='translateX(100%)';d.style.transition='0.35s';setTimeout(()=>d.remove(),360);},3500);
+}
 
+async function doLogin() {
+  const email    = document.getElementById('email').value.trim();
+  const password = document.getElementById('password').value;
+  const errEl    = document.getElementById('errorMsg');
+  const btn      = document.getElementById('loginBtn');
 
-// 🔐 LOGIN FUNCTION
-async function login() {
-  const email = document.getElementById("email").value.trim();
-  const password = document.getElementById("password").value.trim();
+  errEl.textContent = '';
+  if (!email || !password) { errEl.textContent = 'Please fill all fields'; return; }
 
-  if (!email || !password) {
-    alert("⚠️ Please fill all fields");
-    return;
-  }
-
+  btn.disabled=true; btn.textContent='Signing in…';
   try {
-    const res = await fetch("/login", {
-      method: "POST",
-      headers: {"Content-Type": "application/json"},
-      body: JSON.stringify({ email, password })
-    });
-
+    const res  = await fetch('/login', { method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify({email,password}) });
     const data = await res.json();
-
-    if (!res.ok) {
-      alert(data.error || "Login failed");
-      return;
-    }
-
-    // Save user
-    localStorage.setItem("user", data.user);
-
-    alert("✅ Login successful!");
-
-    // Redirect
-    window.location.href = "/";
-
-  } catch (err) {
-    alert("❌ Error: " + err.message);
-  }
+    if (!res.ok) { errEl.textContent = data.error || 'Login failed'; return; }
+    showToast('✅ Welcome back, ' + data.user + '!', 'success');
+    setTimeout(()=>window.location.href='/', 800);
+  } catch { errEl.textContent = '⚠️ Server not reachable'; }
+  finally  { btn.disabled=false; btn.textContent='Sign In'; }
 }
 
+document.addEventListener('keydown', e => { if (e.key==='Enter') doLogin(); });
 </script>
-
 </body>
 </html>
