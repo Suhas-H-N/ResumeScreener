@@ -1,84 +1,114 @@
-🤖 AI Resume Screener is a web application that analyzes a candidate's resume and compares it with a job description to determine how well the resume matches the job requirements.
+# 🤖 ResumeIQ v2.0 — AI Resume Screener
 
-The system extracts text from resumes (PDF, DOCX, TXT), processes the content using Natural Language Processing (NLP), and calculates a similarity score between the resume and job description.
+An AI-powered resume screening and ATS analysis web application built with Python, Flask, and scikit-learn.
 
-🚀 Features:
+---
 
-• Upload resume files (PDF, DOCX, TXT)
-• Paste resume text manually
-• Enter job description for comparison
-• AI-based similarity score using TF-IDF and Cosine Similarity
-• Keyword matching and missing keyword detection
-• Resume statistics such as word count
-• Clean and responsive web interface
+## ✅ Features
 
-🛠 Tech Stack:
+| Feature | v1 | v2 |
+|---------|----|----|
+| Resume upload (PDF, DOCX, TXT) | ✅ | ✅ |
+| Paste resume / job description | ✅ | ✅ |
+| TF-IDF cosine similarity match score | ✅ | ✅ |
+| Keyword matching & missing keywords | ✅ | ✅ |
+| PDF report download | ✅ | ✅ (redesigned) |
+| **Multi-dimension ATS scoring** | ❌ | ✅ |
+| **Animated ATS progress bars** | ❌ | ✅ |
+| **Skill taxonomy (40+ tech + soft skills)** | ❌ | ✅ |
+| **Resume statistics (words, sentences, readability)** | ❌ | ✅ |
+| **Animated score ring** | ❌ | ✅ |
+| **Smart recommendations engine** | basic | ✅ upgraded |
+| **Side-by-side resume comparison** | ❌ | ✅ |
+| **Analysis history page** | ❌ | ✅ |
+| **Server-side session auth** | localStorage only | ✅ Flask sessions |
+| **Toast notifications** (no more alert() popups) | ❌ | ✅ |
+| **Password strength meter** | ❌ | ✅ |
+| **Drag & Drop upload** | basic | ✅ |
+| Dark / Light theme toggle | ✅ | ✅ |
+| Responsive design | ✅ | ✅ |
 
-Backend:
-• Python
-• Flask
+---
 
-Machine Learning / NLP:
-• Scikit-learn (TF-IDF Vectorizer, Cosine Similarity)
+## 📁 Project Structure
 
-Document Processing:
-• PyPDF2
-• python-docx
-
-Frontend:
-• HTML
-• CSS
-• JavaScript
-
-📂 Project Structure:
-
-ResumeScreener
-│
-├── app.py
+```
+ResumeIQ/
+├── app.py               ← Flask backend (all routes, NLP, scoring)
 ├── requirements.txt
-├── README.md
+├── users.json           ← User accounts (auto-created)
+├── history.json         ← Analysis history (auto-created)
+├── uploads/             ← Temp file uploads (auto-created)
 │
-├── templates
-│   └── index.html
+├── templates/
+│   ├── index.html       ← Main analyzer page
+│   ├── login.html       ← Sign in
+│   ├── signup.html      ← Create account
+│   ├── compare.html     ← Side-by-side comparison (NEW)
+│   └── history.html     ← Analysis history (NEW)
 │
-├── static
-│   └── style.css
-│
-└── uploads
+└── static/
+    └── style.css        ← Full design system
+```
 
-⚙️ Installation:
+---
 
-1️. Clone the repository:
-git clone https://github.com/YOUR_USERNAME/ResumeScreener.git
+## ⚙️ How to Run
 
-2️. Navigate to the project folder:
-cd ResumeScreener
+### 1. Create virtual environment (recommended)
+```bash
+python -m venv venv
+source venv/bin/activate        # Mac/Linux
+venv\Scripts\activate           # Windows
+```
 
-3️. Install dependencies:
+### 2. Install dependencies
+```bash
 pip install -r requirements.txt
+```
 
-4. Run the application:
+### 3. Run the app
+```bash
 python app.py
+```
 
-📊 How It Works:
+### 4. Open in browser
+```
+http://localhost:5000
+```
 
-User uploads a resume or pastes resume text
-User enters the job description
-System extracts keywords from both texts
-TF-IDF vectorization converts text to numerical representation
-Cosine similarity calculates the match score
-Matching and missing keywords are displayed
+---
 
-📈 Future Improvements:
+## 📡 API Endpoints
 
-• Advanced NLP using spaCy
-• Skill extraction and classification
-• Resume ranking system for multiple candidates
-• ATS-style scoring system
-• Dashboard for recruiters
+| Method | Endpoint | Description |
+|--------|----------|-------------|
+| POST | /signup | Create account |
+| POST | /login | Sign in (server session) |
+| POST | /logout | Sign out |
+| GET  | /me | Check current session |
+| POST | /analyze | Analyze resume vs JD |
+| POST | /compare | Compare two resumes |
+| GET  | /history | Get user's history (auth required) |
+| DELETE | /history/:id | Delete one history entry |
+| POST | /download-report | Generate PDF report |
 
-👨‍💻 Author:
-Suhas H N
+---
 
-⭐ Support
-If you like this project, consider giving it a star ⭐ on GitHub.
+## 🧠 How ATS Scoring Works
+
+The ATS score is calculated across 5 weighted dimensions:
+
+| Dimension | Weight | What it checks |
+|-----------|--------|----------------|
+| Keyword Density | 30% | How many JD keywords appear in resume |
+| Skill Match | 30% | Tech/soft skills from JD found in resume |
+| Section Structure | 15% | Presence of Experience, Education, Skills, etc. |
+| Action Verbs | 10% | Impact words: Led, Built, Optimized, Delivered… |
+| Resume Length | 15% | 300–1200 words = optimal for ATS |
+
+---
+
+## 👤 Author
+
+**Suhas H N** · [github.com/Suhas-H-N](https://github.com/Suhas-H-N)
