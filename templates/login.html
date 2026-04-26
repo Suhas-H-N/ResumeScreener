@@ -1,98 +1,129 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8"/>
-  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>Login — ResumeIQ</title>
-  <link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;700;800&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Login - ResumeIQ Pro</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        .auth-container {
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 2rem;
+        }
+        .auth-card {
+            background: white;
+            padding: 3rem;
+            border-radius: 1rem;
+            box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1);
+            max-width: 450px;
+            width: 100%;
+        }
+        .auth-header {
+            text-align: center;
+            margin-bottom: 2rem;
+        }
+        .auth-header h1 {
+            color: var(--primary-color);
+            margin-bottom: 0.5rem;
+        }
+        .auth-form .form-group {
+            margin-bottom: 1.5rem;
+        }
+        .auth-form label {
+            display: block;
+            font-weight: 600;
+            margin-bottom: 0.5rem;
+        }
+        .auth-form input {
+            width: 100%;
+            padding: 0.75rem;
+            border: 2px solid var(--gray-200);
+            border-radius: 0.5rem;
+            font-size: 1rem;
+        }
+        .auth-form input:focus {
+            outline: none;
+            border-color: var(--primary-color);
+        }
+        .auth-footer {
+            text-align: center;
+            margin-top: 1.5rem;
+        }
+        .error-message {
+            background: #fee2e2;
+            color: #991b1b;
+            padding: 0.75rem;
+            border-radius: 0.5rem;
+            margin-bottom: 1rem;
+            display: none;
+        }
+    </style>
 </head>
 <body>
-<div class="bg-grid"></div>
-<div class="bg-orb orb-1"></div>
-<div class="bg-orb orb-2"></div>
-
-<div class="app-shell">
-  <header class="site-header">
-    <div class="logo">
-      <div class="logo-mark">R</div>
-      <span class="logo-text">ResumeIQ</span>
+    <div class="auth-container">
+        <div class="auth-card">
+            <div class="auth-header">
+                <h1><i class="fas fa-brain"></i> ResumeIQ Pro</h1>
+                <p>Login to your account</p>
+            </div>
+            
+            <div class="error-message" id="errorMessage"></div>
+            
+            <form class="auth-form" id="loginForm">
+                <div class="form-group">
+                    <label for="email">Email Address</label>
+                    <input type="email" id="email" required>
+                </div>
+                
+                <div class="form-group">
+                    <label for="password">Password</label>
+                    <input type="password" id="password" required>
+                </div>
+                
+                <button type="submit" class="btn-primary btn-large">
+                    <i class="fas fa-sign-in-alt"></i> Login
+                </button>
+            </form>
+            
+            <div class="auth-footer">
+                <p>Don't have an account? <a href="/signup-page">Sign up</a></p>
+                <p><a href="#">Forgot password?</a></p>
+            </div>
+        </div>
     </div>
-    <div style="display:flex;gap:10px;align-items:center;">
-      <button id="themeToggle" class="theme-toggle">🌙</button>
-      <a href="/" class="btn btn-ghost btn-sm">← Home</a>
-    </div>
-  </header>
-
-  <div class="auth-page">
-    <h2>🔐 Welcome Back</h2>
-    <p class="auth-sub">Sign in to access your analysis history</p>
-
-    <div id="errorMsg" style="color:var(--danger);font-size:0.85rem;margin-bottom:12px;min-height:20px;text-align:center;"></div>
-
-    <div class="field-group">
-      <label class="field-label">Email</label>
-      <input type="email" id="email" class="field-input" placeholder="you@example.com" autocomplete="email" required/>
-    </div>
-
-    <div class="field-group">
-      <label class="field-label">Password</label>
-      <div style="position:relative;">
-        <input type="password" id="password" class="field-input" placeholder="••••••••" autocomplete="current-password" required style="padding-right:44px;"/>
-        <button type="button" id="pwToggle" onclick="togglePw()"
-                style="position:absolute;right:12px;top:50%;transform:translateY(-50%);background:none;border:none;cursor:pointer;font-size:1rem;color:var(--text-muted);">👁</button>
-      </div>
-    </div>
-
-    <button onclick="doLogin()" class="btn btn-primary btn-full" id="loginBtn" style="margin-top:8px;">Sign In</button>
-
-    <p class="auth-footer">Don't have an account? <a href="/signup-page">Create one</a></p>
-  </div>
-</div>
-
-<div class="toast-container" id="toastContainer"></div>
-
-<script>
-const themeToggle = document.getElementById('themeToggle');
-function applyTheme(t) { document.body.classList.toggle('light-mode', t==='light'); localStorage.setItem('theme',t); themeToggle.textContent=t==='light'?'🌙':'☀️'; }
-applyTheme(localStorage.getItem('theme')||'dark');
-themeToggle.onclick = ()=>applyTheme(document.body.classList.contains('light-mode')?'dark':'light');
-
-function togglePw() {
-  const inp = document.getElementById('password');
-  const btn = document.getElementById('pwToggle');
-  inp.type = inp.type==='password'?'text':'password';
-  btn.textContent = inp.type==='password'?'👁':'🙈';
-}
-
-function showToast(msg,type='info') {
-  const tc=document.getElementById('toastContainer');
-  const d=document.createElement('div');
-  d.className=`toast ${type}`;d.innerHTML=`<span>${msg}</span>`;tc.appendChild(d);
-  setTimeout(()=>{d.style.opacity='0';d.style.transform='translateX(100%)';d.style.transition='0.35s';setTimeout(()=>d.remove(),360);},3500);
-}
-
-async function doLogin() {
-  const email    = document.getElementById('email').value.trim();
-  const password = document.getElementById('password').value;
-  const errEl    = document.getElementById('errorMsg');
-  const btn      = document.getElementById('loginBtn');
-
-  errEl.textContent = '';
-  if (!email || !password) { errEl.textContent = 'Please fill all fields'; return; }
-
-  btn.disabled=true; btn.textContent='Signing in…';
-  try {
-    const res  = await fetch('/login', { method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify({email,password}) });
-    const data = await res.json();
-    if (!res.ok) { errEl.textContent = data.error || 'Login failed'; return; }
-    showToast('✅ Welcome back, ' + data.user + '!', 'success');
-    setTimeout(()=>window.location.href='/', 800);
-  } catch { errEl.textContent = '⚠️ Server not reachable'; }
-  finally  { btn.disabled=false; btn.textContent='Sign In'; }
-}
-
-document.addEventListener('keydown', e => { if (e.key==='Enter') doLogin(); });
-</script>
+    
+    <script>
+        document.getElementById('loginForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            
+            const email = document.getElementById('email').value;
+            const password = document.getElementById('password').value;
+            const errorMessage = document.getElementById('errorMessage');
+            
+            try {
+                const response = await fetch('/api/login', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ email, password })
+                });
+                
+                const data = await response.json();
+                
+                if (response.ok) {
+                    window.location.href = '/';
+                } else {
+                    errorMessage.textContent = data.error;
+                    errorMessage.style.display = 'block';
+                }
+            } catch (error) {
+                errorMessage.textContent = 'Login failed. Please try again.';
+                errorMessage.style.display = 'block';
+            }
+        });
+    </script>
 </body>
 </html>
