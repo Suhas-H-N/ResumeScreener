@@ -1,0 +1,36 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>404 Not Found - ResumeIQ Pro</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        .error-page { display: flex; flex-direction: column; align-items: center; justify-content: center; min-height: 70vh; text-align: center; padding: 2rem; }
+        .error-code { font-size: 6rem; font-weight: 900; color: var(--primary); line-height: 1; }
+        .error-title { font-size: 1.75rem; font-weight: 700; margin: 1rem 0 0.5rem; }
+        .error-desc { color: var(--gray-500); max-width: 400px; margin-bottom: 2rem; }
+        .error-actions { display: flex; gap: 1rem; flex-wrap: wrap; justify-content: center; }
+    </style>
+</head>
+<body>
+    <nav class="navbar">
+        <div class="container">
+            <div class="nav-brand"><i class="fas fa-brain"></i><span>ResumeIQ Pro</span></div>
+            <div class="nav-links"><a href="/">Analyze</a></div>
+        </div>
+    </nav>
+    <main class="main-content">
+        <div class="error-page">
+            <div class="error-code">404</div>
+            <div class="error-title">Page Not Found</div>
+            <p class="error-desc">The page you're looking for doesn't exist or has been moved.</p>
+            <div class="error-actions">
+                <a href="/" class="btn-primary"><i class="fas fa-home"></i> Go Home</a>
+                <a href="/history-page" class="btn-secondary"><i class="fas fa-history"></i> My History</a>
+            </div>
+        </div>
+    </main>
+</body>
+</html>
