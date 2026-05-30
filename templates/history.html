@@ -6,80 +6,59 @@
     <title>Analysis History - ResumeIQ Pro</title>
     <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
     <style>
-        .history-header {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            margin-bottom: 2rem;
-        }
-        .history-table {
-            width: 100%;
-            border-collapse: collapse;
-        }
-        .history-table th {
-            background: var(--gray-100);
-            padding: 1rem;
-            text-align: left;
-            font-weight: 600;
-            border-bottom: 2px solid var(--gray-200);
-        }
-        .history-table td {
-            padding: 1rem;
-            border-bottom: 1px solid var(--gray-200);
-        }
-        .history-table tr:hover {
-            background: var(--gray-100);
-        }
-        .score-badge {
-            display: inline-block;
-            padding: 0.25rem 0.75rem;
-            border-radius: 1rem;
-            font-weight: 600;
-            font-size: 0.875rem;
-        }
+        .history-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 2rem; flex-wrap: wrap; gap: 1rem; }
+        .history-table { width: 100%; border-collapse: collapse; }
+        .history-table th { background: var(--gray-100); padding: 1rem; text-align: left; font-weight: 600; border-bottom: 2px solid var(--gray-200); }
+        .history-table td { padding: 1rem; border-bottom: 1px solid var(--gray-200); }
+        .history-table tr:hover { background: var(--gray-100); }
+        .score-badge { display: inline-block; padding: 0.25rem 0.75rem; border-radius: 1rem; font-weight: 600; font-size: 0.875rem; }
         .score-excellent { background: #d1fae5; color: #065f46; }
         .score-good { background: #fef3c7; color: #92400e; }
         .score-average { background: #fed7aa; color: #7c2d12; }
         .score-low { background: #fee2e2; color: #991b1b; }
-        .action-buttons {
-            display: flex;
-            gap: 0.5rem;
-        }
-        .btn-icon {
-            padding: 0.5rem;
-            background: transparent;
-            border: none;
-            cursor: pointer;
-            border-radius: 0.25rem;
-            transition: background 0.2s;
-        }
-        .btn-icon:hover {
-            background: var(--gray-200);
-        }
-        .empty-state {
-            text-align: center;
-            padding: 4rem 2rem;
-        }
-        .empty-state i {
-            font-size: 4rem;
-            color: var(--gray-300);
-            margin-bottom: 1rem;
-        }
+        .action-buttons { display: flex; gap: 0.5rem; }
+        .btn-icon { padding: 0.5rem; background: transparent; border: none; cursor: pointer; border-radius: 0.25rem; transition: background 0.2s; }
+        .btn-icon:hover { background: var(--gray-200); }
+        .btn-icon.danger:hover { background: #fee2e2; color: #dc2626; }
+        .empty-state { text-align: center; padding: 4rem 2rem; }
+        .empty-state i { font-size: 4rem; color: var(--gray-300); margin-bottom: 1rem; display: block; }
+        .chart-container { position: relative; height: 220px; }
+        /* Detail Modal */
+        .modal-overlay { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.5); z-index: 1000; justify-content: center; align-items: center; }
+        .modal-overlay.open { display: flex; }
+        .modal { background: white; border-radius: 1rem; padding: 2rem; width: 100%; max-width: 620px; max-height: 85vh; overflow-y: auto; }
+        .modal-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.5rem; }
+        .modal-close { background: none; border: none; cursor: pointer; font-size: 1.25rem; color: var(--gray-500); }
+        .detail-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; margin-bottom: 1.25rem; }
+        .detail-box { background: var(--gray-100); border-radius: 0.6rem; padding: 1rem; }
+        .detail-box .d-label { font-size: 0.78rem; color: var(--gray-500); margin-bottom: 0.25rem; }
+        .detail-box .d-value { font-size: 1.4rem; font-weight: 700; color: var(--primary); }
+        .tag-list { display: flex; flex-wrap: wrap; gap: 0.4rem; margin-top: 0.5rem; }
+        .tag { padding: 0.2rem 0.6rem; border-radius: 2rem; font-size: 0.78rem; font-weight: 500; background: #ede9fe; color: #6d28d9; }
+        .tag.missing { background: #fee2e2; color: #991b1b; }
     </style>
 </head>
 <body>
-    <!-- Navigation (reuse from index.html) -->
     <nav class="navbar">
         <div class="container">
-            <div class="nav-brand">
-                <i class="fas fa-brain"></i>
-                <span>ResumeIQ Pro</span>
-            </div>
+            <div class="nav-brand"><i class="fas fa-brain"></i><span>ResumeIQ Pro</span></div>
             <div class="nav-links">
                 <a href="/">Analyze</a>
                 <a href="/compare-page">Compare</a>
                 <a href="/history-page" class="active">History</a>
+                <a href="/jobs-page">Job Tracker</a>
+                <div class="user-menu" id="userMenu" style="display:none;">
+                    <button class="btn-ghost" id="userMenuButton">
+                        <i class="fas fa-user-circle"></i>
+                        <span id="userName">Me</span>
+                    </button>
+                    <div class="dropdown-menu" id="userDropdown">
+                        <a href="/profile-page"><i class="fas fa-user"></i> Profile</a>
+                        <a href="#" id="logoutBtn"><i class="fas fa-sign-out-alt"></i> Logout</a>
+                    </div>
+                </div>
                 <a href="/login-page" class="btn-primary" id="loginLink">Login</a>
             </div>
         </div>
@@ -87,142 +66,177 @@
 
     <main class="main-content">
         <div class="container">
+            <!-- Score Trend Chart -->
+            <div class="card" id="chartCard" style="display:none; margin-bottom:1.5rem;">
+                <h3><i class="fas fa-chart-line"></i> Score Trend</h3>
+                <div class="chart-container"><canvas id="trendChart"></canvas></div>
+            </div>
+
             <div class="card">
                 <div class="history-header">
                     <h2><i class="fas fa-history"></i> Analysis History</h2>
-                    <button class="btn-secondary" id="exportBtn">
-                        <i class="fas fa-download"></i> Export CSV
-                    </button>
+                    <button class="btn-secondary" id="exportBtn"><i class="fas fa-download"></i> Export CSV</button>
                 </div>
 
                 <div id="historyContent">
-                    <div class="empty-state">
-                        <i class="fas fa-spinner fa-spin"></i>
-                        <p>Loading history...</p>
-                    </div>
+                    <div class="empty-state"><i class="fas fa-spinner fa-spin"></i><p>Loading history...</p></div>
                 </div>
             </div>
         </div>
     </main>
 
-    <footer class="footer">
-        <div class="container">
-            <div class="footer-bottom">
-                <p>&copy; 2026 ResumeIQ Pro. Enhanced with Claude AI.</p>
+    <!-- Detail Modal -->
+    <div class="modal-overlay" id="detailModal">
+        <div class="modal">
+            <div class="modal-header">
+                <span style="font-size:1.1rem;font-weight:700;" id="detailTitle">Analysis Detail</span>
+                <button class="modal-close" id="closeDetail"><i class="fas fa-times"></i></button>
             </div>
+            <div id="detailContent"></div>
         </div>
+    </div>
+
+    <footer class="footer">
+        <div class="container"><div class="footer-bottom"><p>&copy; 2026 ResumeIQ Pro. Enhanced with Claude AI.</p></div></div>
     </footer>
 
     <script>
         let historyData = [];
+        let trendChartInstance = null;
 
         async function loadHistory() {
             try {
                 const response = await fetch('/api/history');
                 const data = await response.json();
-
-                if (!response.ok) {
-                    throw new Error(data.error || 'Failed to load history');
-                }
-
+                if (!response.ok) throw new Error(data.error || 'Failed to load history');
                 historyData = data.analyses;
                 displayHistory(historyData);
+                if (historyData.length > 1) renderTrendChart(historyData);
             } catch (error) {
-                console.error('Load history error:', error);
                 document.getElementById('historyContent').innerHTML = `
                     <div class="empty-state">
                         <i class="fas fa-exclamation-circle"></i>
                         <p>Please <a href="/login-page">login</a> to view your history</p>
-                    </div>
-                `;
+                    </div>`;
             }
+        }
+
+        function renderTrendChart(analyses) {
+            const card = document.getElementById('chartCard');
+            card.style.display = 'block';
+            const sorted = [...analyses].reverse().slice(-10); // last 10
+            const labels = sorted.map(a => new Date(a.date).toLocaleDateString('en-US', {month:'short', day:'numeric'}));
+            const matchScores = sorted.map(a => a.match_score);
+            const atsScores = sorted.map(a => a.ats_score);
+
+            const ctx = document.getElementById('trendChart').getContext('2d');
+            if (trendChartInstance) trendChartInstance.destroy();
+            trendChartInstance = new Chart(ctx, {
+                type: 'line',
+                data: {
+                    labels,
+                    datasets: [
+                        { label: 'Match Score', data: matchScores, borderColor: '#6366f1', backgroundColor: 'rgba(99,102,241,0.1)', tension: 0.4, fill: true, pointRadius: 4 },
+                        { label: 'ATS Score', data: atsScores, borderColor: '#10b981', backgroundColor: 'rgba(16,185,129,0.1)', tension: 0.4, fill: true, pointRadius: 4 }
+                    ]
+                },
+                options: {
+                    responsive: true, maintainAspectRatio: false,
+                    scales: { y: { min: 0, max: 100, ticks: { callback: v => v + '%' } } },
+                    plugins: { legend: { position: 'bottom' } }
+                }
+            });
         }
 
         function displayHistory(analyses) {
             const container = document.getElementById('historyContent');
-
             if (!analyses || analyses.length === 0) {
-                container.innerHTML = `
-                    <div class="empty-state">
-                        <i class="fas fa-inbox"></i>
-                        <p>No analysis history yet</p>
-                        <a href="/" class="btn-primary" style="margin-top: 1rem;">Start Analyzing</a>
-                    </div>
-                `;
+                container.innerHTML = `<div class="empty-state"><i class="fas fa-inbox"></i><p>No analysis history yet</p><a href="/" class="btn-primary" style="margin-top:1rem;">Start Analyzing</a></div>`;
                 return;
             }
-
-            const table = `
+            container.innerHTML = `
                 <table class="history-table">
-                    <thead>
-                        <tr>
-                            <th>Date</th>
-                            <th>Job Title</th>
-                            <th>Match Score</th>
-                            <th>ATS Score</th>
-                            <th>Level</th>
-                            <th>Actions</th>
-                        </tr>
-                    </thead>
+                    <thead><tr><th>Date</th><th>Job Title</th><th>Match Score</th><th>ATS Score</th><th>Level</th><th>Actions</th></tr></thead>
                     <tbody>
                         ${analyses.map(a => `
                             <tr>
                                 <td>${new Date(a.date).toLocaleDateString()}</td>
-                                <td>${a.job_title || 'N/A'}</td>
+                                <td>${a.job_title || 'N/A'}${a.job_company ? '<br><small style="color:var(--gray-500);">' + escHtml(a.job_company) + '</small>' : ''}</td>
                                 <td><strong>${a.match_score}%</strong></td>
                                 <td><strong>${a.ats_score}%</strong></td>
                                 <td><span class="score-badge score-${a.level.toLowerCase()}">${a.level}</span></td>
                                 <td>
                                     <div class="action-buttons">
-                                        <button class="btn-icon" onclick="viewAnalysis(${a.id})" title="View">
-                                            <i class="fas fa-eye"></i>
-                                        </button>
-                                        <button class="btn-icon" onclick="deleteAnalysis(${a.id})" title="Delete">
-                                            <i class="fas fa-trash"></i>
-                                        </button>
+                                        <button class="btn-icon" onclick="viewAnalysis(${a.id})" title="View Details"><i class="fas fa-eye"></i></button>
+                                        <button class="btn-icon danger" onclick="deleteAnalysis(${a.id})" title="Delete"><i class="fas fa-trash"></i></button>
                                     </div>
                                 </td>
-                            </tr>
-                        `).join('')}
+                            </tr>`).join('')}
                     </tbody>
-                </table>
-            `;
-
-            container.innerHTML = table;
+                </table>`;
         }
 
         async function viewAnalysis(id) {
-            // In a full implementation, this would show a modal with details
-            alert(`Viewing analysis ${id}`);
+            try {
+                const res = await fetch(`/api/history/${id}`);
+                if (!res.ok) { alert('Failed to load analysis details.'); return; }
+                const a = await res.json();
+
+                document.getElementById('detailTitle').textContent = (a.job_title || 'Analysis') + (a.job_company ? ' @ ' + a.job_company : '');
+
+                const skillTags = (a.resume_skills || []).map(s => `<span class="tag">${escHtml(s)}</span>`).join('');
+                const missingTags = (a.missing_skills || []).map(s => `<span class="tag missing">${escHtml(s)}</span>`).join('');
+                const recs = (a.recommendations || []).map(r => `<li style="margin-bottom:0.4rem;">${escHtml(r)}</li>`).join('');
+
+                document.getElementById('detailContent').innerHTML = `
+                    <div class="detail-grid">
+                        <div class="detail-box"><div class="d-label">Match Score</div><div class="d-value">${a.match_score}%</div></div>
+                        <div class="detail-box"><div class="d-label">ATS Score</div><div class="d-value">${a.ats_score}%</div></div>
+                    </div>
+                    ${a.ai_summary ? `<p style="background:#ede9fe;padding:1rem;border-radius:0.6rem;margin-bottom:1rem;font-size:0.9rem;color:#3730a3;">${escHtml(a.ai_summary)}</p>` : ''}
+                    ${skillTags ? `<div style="margin-bottom:1rem;"><strong>Skills Found</strong><div class="tag-list">${skillTags}</div></div>` : ''}
+                    ${missingTags ? `<div style="margin-bottom:1rem;"><strong>Missing Skills</strong><div class="tag-list">${missingTags}</div></div>` : ''}
+                    ${recs ? `<div><strong>Recommendations</strong><ul style="padding-left:1.25rem;margin-top:0.5rem;">${recs}</ul></div>` : ''}
+                `;
+                document.getElementById('detailModal').classList.add('open');
+            } catch (err) {
+                alert('Could not load analysis details.');
+            }
         }
 
         async function deleteAnalysis(id) {
-            if (!confirm('Are you sure you want to delete this analysis?')) {
-                return;
-            }
-
+            if (!confirm('Delete this analysis?')) return;
             try {
-                const response = await fetch(`/api/history/${id}`, {
-                    method: 'DELETE'
-                });
-
-                if (response.ok) {
-                    loadHistory(); // Reload
-                } else {
-                    alert('Failed to delete analysis');
-                }
-            } catch (error) {
-                console.error('Delete error:', error);
-                alert('Failed to delete analysis');
-            }
+                const res = await fetch(`/api/history/${id}`, { method: 'DELETE' });
+                if (res.ok) loadHistory();
+                else alert('Failed to delete.');
+            } catch { alert('Network error.'); }
         }
 
-        document.getElementById('exportBtn').addEventListener('click', async () => {
-            window.location.href = '/api/export/history';
-        });
+        function escHtml(s) {
+            return String(s || '').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+        }
 
-        // Load on page load
+        document.getElementById('exportBtn').addEventListener('click', () => window.location.href = '/api/export/history');
+        document.getElementById('closeDetail').addEventListener('click', () => document.getElementById('detailModal').classList.remove('open'));
+        document.getElementById('detailModal').addEventListener('click', (e) => { if (e.target === document.getElementById('detailModal')) document.getElementById('detailModal').classList.remove('open'); });
+
+        // Nav auth
+        fetch('/api/me').then(r => r.json()).then(data => {
+            if (data.logged_in) {
+                document.getElementById('loginLink').style.display = 'none';
+                document.getElementById('userMenu').style.display = 'block';
+                document.getElementById('userName').textContent = data.user.name;
+            }
+        }).catch(() => {});
+        document.getElementById('logoutBtn')?.addEventListener('click', async (e) => { e.preventDefault(); await fetch('/api/logout', {method:'POST'}); window.location.href = '/'; });
+        document.getElementById('userMenuButton')?.addEventListener('click', (e) => { e.stopPropagation(); document.getElementById('userDropdown').classList.toggle('show'); });
+        document.addEventListener('click', () => document.getElementById('userDropdown')?.classList.remove('show'));
+
         loadHistory();
     </script>
+</body>
+</html>
+    <style>
 </body>
 </html>
