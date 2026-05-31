@@ -3,240 +3,329 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Analysis History - ResumeIQ Pro</title>
+    <title>ResumeIQ Pro — AI-Powered Resume Analysis</title>
     <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
-    <style>
-        .history-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 2rem; flex-wrap: wrap; gap: 1rem; }
-        .history-table { width: 100%; border-collapse: collapse; }
-        .history-table th { background: var(--gray-100); padding: 1rem; text-align: left; font-weight: 600; border-bottom: 2px solid var(--gray-200); }
-        .history-table td { padding: 1rem; border-bottom: 1px solid var(--gray-200); }
-        .history-table tr:hover { background: var(--gray-100); }
-        .score-badge { display: inline-block; padding: 0.25rem 0.75rem; border-radius: 1rem; font-weight: 600; font-size: 0.875rem; }
-        .score-excellent { background: #d1fae5; color: #065f46; }
-        .score-good { background: #fef3c7; color: #92400e; }
-        .score-average { background: #fed7aa; color: #7c2d12; }
-        .score-low { background: #fee2e2; color: #991b1b; }
-        .action-buttons { display: flex; gap: 0.5rem; }
-        .btn-icon { padding: 0.5rem; background: transparent; border: none; cursor: pointer; border-radius: 0.25rem; transition: background 0.2s; }
-        .btn-icon:hover { background: var(--gray-200); }
-        .btn-icon.danger:hover { background: #fee2e2; color: #dc2626; }
-        .empty-state { text-align: center; padding: 4rem 2rem; }
-        .empty-state i { font-size: 4rem; color: var(--gray-300); margin-bottom: 1rem; display: block; }
-        .chart-container { position: relative; height: 220px; }
-        /* Detail Modal */
-        .modal-overlay { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.5); z-index: 1000; justify-content: center; align-items: center; }
-        .modal-overlay.open { display: flex; }
-        .modal { background: white; border-radius: 1rem; padding: 2rem; width: 100%; max-width: 620px; max-height: 85vh; overflow-y: auto; }
-        .modal-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.5rem; }
-        .modal-close { background: none; border: none; cursor: pointer; font-size: 1.25rem; color: var(--gray-500); }
-        .detail-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; margin-bottom: 1.25rem; }
-        .detail-box { background: var(--gray-100); border-radius: 0.6rem; padding: 1rem; }
-        .detail-box .d-label { font-size: 0.78rem; color: var(--gray-500); margin-bottom: 0.25rem; }
-        .detail-box .d-value { font-size: 1.4rem; font-weight: 700; color: var(--primary); }
-        .tag-list { display: flex; flex-wrap: wrap; gap: 0.4rem; margin-top: 0.5rem; }
-        .tag { padding: 0.2rem 0.6rem; border-radius: 2rem; font-size: 0.78rem; font-weight: 500; background: #ede9fe; color: #6d28d9; }
-        .tag.missing { background: #fee2e2; color: #991b1b; }
-    </style>
 </head>
 <body>
-    <nav class="navbar">
-        <div class="container">
-            <div class="nav-brand"><i class="fas fa-brain"></i><span>ResumeIQ Pro</span></div>
-            <div class="nav-links">
-                <a href="/">Analyze</a>
-                <a href="/compare-page">Compare</a>
-                <a href="/history-page" class="active">History</a>
-                <a href="/jobs-page">Job Tracker</a>
-                <div class="user-menu" id="userMenu" style="display:none;">
-                    <button class="btn-ghost" id="userMenuButton">
-                        <i class="fas fa-user-circle"></i>
-                        <span id="userName">Me</span>
-                    </button>
-                    <div class="dropdown-menu" id="userDropdown">
-                        <a href="/profile-page"><i class="fas fa-user"></i> Profile</a>
-                        <a href="#" id="logoutBtn"><i class="fas fa-sign-out-alt"></i> Logout</a>
-                    </div>
-                </div>
-                <a href="/login-page" class="btn-primary" id="loginLink">Login</a>
-            </div>
+
+<!-- ── Navigation ─────────────────────────────────────── -->
+<nav class="navbar">
+    <div class="container">
+        <div class="nav-brand">
+            <i class="fas fa-brain"></i>
+            <span>ResumeIQ Pro</span>
         </div>
-    </nav>
-
-    <main class="main-content">
-        <div class="container">
-            <!-- Score Trend Chart -->
-            <div class="card" id="chartCard" style="display:none; margin-bottom:1.5rem;">
-                <h3><i class="fas fa-chart-line"></i> Score Trend</h3>
-                <div class="chart-container"><canvas id="trendChart"></canvas></div>
-            </div>
-
-            <div class="card">
-                <div class="history-header">
-                    <h2><i class="fas fa-history"></i> Analysis History</h2>
-                    <button class="btn-secondary" id="exportBtn"><i class="fas fa-download"></i> Export CSV</button>
-                </div>
-
-                <div id="historyContent">
-                    <div class="empty-state"><i class="fas fa-spinner fa-spin"></i><p>Loading history...</p></div>
+        <div class="nav-links">
+            <a href="/" class="active">Analyze</a>
+            <a href="/compare-page">Compare</a>
+            <a href="/history-page">History</a>
+            <a href="/jobs-page">Job Tracker</a>
+            <div class="user-menu" id="userMenu" style="display:none;">
+                <button class="btn-ghost" id="userMenuButton">
+                    <i class="fas fa-user-circle"></i>
+                    <span id="userName">Me</span>
+                </button>
+                <div class="dropdown-menu" id="userDropdown">
+                    <a href="/profile-page"><i class="fas fa-user"></i> Profile</a>
+                    <a href="#" id="logoutBtn"><i class="fas fa-sign-out-alt"></i> Logout</a>
                 </div>
             </div>
-        </div>
-    </main>
-
-    <!-- Detail Modal -->
-    <div class="modal-overlay" id="detailModal">
-        <div class="modal">
-            <div class="modal-header">
-                <span style="font-size:1.1rem;font-weight:700;" id="detailTitle">Analysis Detail</span>
-                <button class="modal-close" id="closeDetail"><i class="fas fa-times"></i></button>
-            </div>
-            <div id="detailContent"></div>
+            <a href="/login-page" class="btn-primary" id="loginLink">Login</a>
         </div>
     </div>
+</nav>
 
-    <footer class="footer">
-        <div class="container"><div class="footer-bottom"><p>&copy; 2026 ResumeIQ Pro. Enhanced with Claude AI.</p></div></div>
-    </footer>
+<!-- ── Hero ───────────────────────────────────────────── -->
+<section class="hero">
+    <div class="container">
+        <div class="hero-content">
+            <div class="hero-eyebrow"><i class="fas fa-sparkles"></i> Powered by Claude AI</div>
+            <h1>Land the Job with a<br><span class="accent">Smarter Resume</span></h1>
+            <p class="hero-subtitle">Instant AI analysis — ATS scoring, keyword matching, salary estimates, career gap detection, and professional recommendations in seconds.</p>
+            <div class="hero-stats">
+                <div class="stat-card">
+                    <i class="fas fa-chart-line"></i>
+                    <div><div class="stat-number">15+</div><div class="stat-label">Analysis Metrics</div></div>
+                </div>
+                <div class="stat-card">
+                    <i class="fas fa-robot"></i>
+                    <div><div class="stat-number">ATS</div><div class="stat-label">Optimized Scoring</div></div>
+                </div>
+                <div class="stat-card">
+                    <i class="fas fa-dollar-sign"></i>
+                    <div><div class="stat-number">Salary</div><div class="stat-label">Range Estimator</div></div>
+                </div>
+                <div class="stat-card">
+                    <i class="fas fa-bolt"></i>
+                    <div><div class="stat-number">&lt;30s</div><div class="stat-label">Analysis Time</div></div>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
 
-    <script>
-        let historyData = [];
-        let trendChartInstance = null;
+<!-- ── Main ───────────────────────────────────────────── -->
+<main class="main-content">
+    <div class="container">
 
-        async function loadHistory() {
-            try {
-                const response = await fetch('/api/history');
-                const data = await response.json();
-                if (!response.ok) throw new Error(data.error || 'Failed to load history');
-                historyData = data.analyses;
-                displayHistory(historyData);
-                if (historyData.length > 1) renderTrendChart(historyData);
-            } catch (error) {
-                document.getElementById('historyContent').innerHTML = `
-                    <div class="empty-state">
-                        <i class="fas fa-exclamation-circle"></i>
-                        <p>Please <a href="/login-page">login</a> to view your history</p>
-                    </div>`;
-            }
-        }
+        <!-- Upload Resume -->
+        <div class="card upload-section">
+            <h2><i class="fas fa-file-upload"></i> Upload Your Resume</h2>
+            <p class="section-description">Upload a PDF/DOCX file or paste your resume text below</p>
 
-        function renderTrendChart(analyses) {
-            const card = document.getElementById('chartCard');
-            card.style.display = 'block';
-            const sorted = [...analyses].reverse().slice(-10); // last 10
-            const labels = sorted.map(a => new Date(a.date).toLocaleDateString('en-US', {month:'short', day:'numeric'}));
-            const matchScores = sorted.map(a => a.match_score);
-            const atsScores = sorted.map(a => a.ats_score);
-
-            const ctx = document.getElementById('trendChart').getContext('2d');
-            if (trendChartInstance) trendChartInstance.destroy();
-            trendChartInstance = new Chart(ctx, {
-                type: 'line',
-                data: {
-                    labels,
-                    datasets: [
-                        { label: 'Match Score', data: matchScores, borderColor: '#6366f1', backgroundColor: 'rgba(99,102,241,0.1)', tension: 0.4, fill: true, pointRadius: 4 },
-                        { label: 'ATS Score', data: atsScores, borderColor: '#10b981', backgroundColor: 'rgba(16,185,129,0.1)', tension: 0.4, fill: true, pointRadius: 4 }
-                    ]
-                },
-                options: {
-                    responsive: true, maintainAspectRatio: false,
-                    scales: { y: { min: 0, max: 100, ticks: { callback: v => v + '%' } } },
-                    plugins: { legend: { position: 'bottom' } }
-                }
-            });
-        }
-
-        function displayHistory(analyses) {
-            const container = document.getElementById('historyContent');
-            if (!analyses || analyses.length === 0) {
-                container.innerHTML = `<div class="empty-state"><i class="fas fa-inbox"></i><p>No analysis history yet</p><a href="/" class="btn-primary" style="margin-top:1rem;">Start Analyzing</a></div>`;
-                return;
-            }
-            container.innerHTML = `
-                <table class="history-table">
-                    <thead><tr><th>Date</th><th>Job Title</th><th>Match Score</th><th>ATS Score</th><th>Level</th><th>Actions</th></tr></thead>
-                    <tbody>
-                        ${analyses.map(a => `
-                            <tr>
-                                <td>${new Date(a.date).toLocaleDateString()}</td>
-                                <td>${a.job_title || 'N/A'}${a.job_company ? '<br><small style="color:var(--gray-500);">' + escHtml(a.job_company) + '</small>' : ''}</td>
-                                <td><strong>${a.match_score}%</strong></td>
-                                <td><strong>${a.ats_score}%</strong></td>
-                                <td><span class="score-badge score-${a.level.toLowerCase()}">${a.level}</span></td>
-                                <td>
-                                    <div class="action-buttons">
-                                        <button class="btn-icon" onclick="viewAnalysis(${a.id})" title="View Details"><i class="fas fa-eye"></i></button>
-                                        <button class="btn-icon danger" onclick="deleteAnalysis(${a.id})" title="Delete"><i class="fas fa-trash"></i></button>
-                                    </div>
-                                </td>
-                            </tr>`).join('')}
-                    </tbody>
-                </table>`;
-        }
-
-        async function viewAnalysis(id) {
-            try {
-                const res = await fetch(`/api/history/${id}`);
-                if (!res.ok) { alert('Failed to load analysis details.'); return; }
-                const a = await res.json();
-
-                document.getElementById('detailTitle').textContent = (a.job_title || 'Analysis') + (a.job_company ? ' @ ' + a.job_company : '');
-
-                const skillTags = (a.resume_skills || []).map(s => `<span class="tag">${escHtml(s)}</span>`).join('');
-                const missingTags = (a.missing_skills || []).map(s => `<span class="tag missing">${escHtml(s)}</span>`).join('');
-                const recs = (a.recommendations || []).map(r => `<li style="margin-bottom:0.4rem;">${escHtml(r)}</li>`).join('');
-
-                document.getElementById('detailContent').innerHTML = `
-                    <div class="detail-grid">
-                        <div class="detail-box"><div class="d-label">Match Score</div><div class="d-value">${a.match_score}%</div></div>
-                        <div class="detail-box"><div class="d-label">ATS Score</div><div class="d-value">${a.ats_score}%</div></div>
+            <div class="upload-area" id="uploadArea">
+                <input type="file" id="resumeFile" accept=".pdf,.docx,.txt,.doc" hidden>
+                <div class="upload-placeholder">
+                    <i class="fas fa-cloud-upload-alt"></i>
+                    <p>Drag & drop your resume or <span class="upload-link">browse files</span></p>
+                    <small>PDF, DOCX, TXT — max 10 MB</small>
+                </div>
+                <div class="file-preview" id="filePreview" style="display:none;">
+                    <i class="fas fa-file-alt"></i>
+                    <div class="file-info">
+                        <span id="fileName"></span>
+                        <small id="fileSize"></small>
                     </div>
-                    ${a.ai_summary ? `<p style="background:#ede9fe;padding:1rem;border-radius:0.6rem;margin-bottom:1rem;font-size:0.9rem;color:#3730a3;">${escHtml(a.ai_summary)}</p>` : ''}
-                    ${skillTags ? `<div style="margin-bottom:1rem;"><strong>Skills Found</strong><div class="tag-list">${skillTags}</div></div>` : ''}
-                    ${missingTags ? `<div style="margin-bottom:1rem;"><strong>Missing Skills</strong><div class="tag-list">${missingTags}</div></div>` : ''}
-                    ${recs ? `<div><strong>Recommendations</strong><ul style="padding-left:1.25rem;margin-top:0.5rem;">${recs}</ul></div>` : ''}
-                `;
-                document.getElementById('detailModal').classList.add('open');
-            } catch (err) {
-                alert('Could not load analysis details.');
-            }
-        }
+                    <button class="btn-remove" id="removeFileBtn"><i class="fas fa-times"></i></button>
+                </div>
+            </div>
 
-        async function deleteAnalysis(id) {
-            if (!confirm('Delete this analysis?')) return;
-            try {
-                const res = await fetch(`/api/history/${id}`, { method: 'DELETE' });
-                if (res.ok) loadHistory();
-                else alert('Failed to delete.');
-            } catch { alert('Network error.'); }
-        }
+            <div class="text-input-section">
+                <div class="form-group">
+                    <label for="resumeText">Or paste resume text</label>
+                    <textarea id="resumeText" rows="8" placeholder="Paste your resume content here..."></textarea>
+                </div>
+            </div>
+        </div>
 
-        function escHtml(s) {
-            return String(s || '').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
-        }
+        <!-- Job Description -->
+        <div class="card">
+            <h2><i class="fas fa-briefcase"></i> Job Description</h2>
+            <p class="section-description">Enter the job posting details for an accurate match analysis</p>
 
-        document.getElementById('exportBtn').addEventListener('click', () => window.location.href = '/api/export/history');
-        document.getElementById('closeDetail').addEventListener('click', () => document.getElementById('detailModal').classList.remove('open'));
-        document.getElementById('detailModal').addEventListener('click', (e) => { if (e.target === document.getElementById('detailModal')) document.getElementById('detailModal').classList.remove('open'); });
+            <div class="form-row">
+                <div class="form-group">
+                    <label for="jobTitle">Job Title <span style="color:var(--slate-light);font-weight:400;text-transform:none;letter-spacing:0;">(optional)</span></label>
+                    <input type="text" id="jobTitle" placeholder="e.g., Senior Software Engineer">
+                </div>
+                <div class="form-group">
+                    <label for="jobCompany">Company <span style="color:var(--slate-light);font-weight:400;text-transform:none;letter-spacing:0;">(optional)</span></label>
+                    <input type="text" id="jobCompany" placeholder="e.g., Google">
+                </div>
+            </div>
 
-        // Nav auth
-        fetch('/api/me').then(r => r.json()).then(data => {
-            if (data.logged_in) {
-                document.getElementById('loginLink').style.display = 'none';
-                document.getElementById('userMenu').style.display = 'block';
-                document.getElementById('userName').textContent = data.user.name;
-            }
-        }).catch(() => {});
-        document.getElementById('logoutBtn')?.addEventListener('click', async (e) => { e.preventDefault(); await fetch('/api/logout', {method:'POST'}); window.location.href = '/'; });
-        document.getElementById('userMenuButton')?.addEventListener('click', (e) => { e.stopPropagation(); document.getElementById('userDropdown').classList.toggle('show'); });
-        document.addEventListener('click', () => document.getElementById('userDropdown')?.classList.remove('show'));
+            <div class="form-group">
+                <label for="jobDescription">Job Description <span style="color:var(--danger);font-weight:400;text-transform:none;letter-spacing:0;">*required</span></label>
+                <textarea id="jobDescription" rows="10" placeholder="Paste the full job description here..."></textarea>
+            </div>
 
-        loadHistory();
-    </script>
-</body>
-</html>
-    <style>
+            <button class="btn-primary btn-large" id="analyzeBtn">
+                <i class="fas fa-search"></i> Analyze Resume
+            </button>
+        </div>
+
+        <!-- Loading -->
+        <div class="loading-state" id="loadingState" style="display:none;">
+            <div class="spinner"></div>
+            <p style="color:var(--slate);font-size:0.95rem;">Analyzing your resume with AI…</p>
+            <p style="color:var(--slate-light);font-size:0.82rem;margin-top:6px;">This usually takes 10–25 seconds</p>
+        </div>
+
+        <!-- ═══ RESULTS ════════════════════════════════════ -->
+        <div id="resultsSection" style="display:none;">
+
+            <!-- Header -->
+            <div class="results-header">
+                <h2 style="font-family:var(--font-display);font-size:1.8rem;color:var(--navy);">
+                    <i class="fas fa-chart-pie" style="color:var(--gold);font-size:1.3rem;"></i> Analysis Results
+                </h2>
+                <div class="results-actions">
+                    <button class="btn-secondary" id="downloadReportBtn"><i class="fas fa-download"></i> Download Report</button>
+                    <button class="btn-secondary" id="newAnalysisBtn"><i class="fas fa-redo"></i> New Analysis</button>
+                </div>
+            </div>
+
+            <!-- Score Cards -->
+            <div class="score-cards">
+                <div class="score-card">
+                    <div class="score-header"><i class="fas fa-bullseye"></i><span>Match Score</span></div>
+                    <div class="score-value" id="matchScore">--</div>
+                    <div class="score-label" id="matchLevel">--</div>
+                    <div class="score-bar"><div class="score-bar-fill" id="matchScoreBar" style="width:0%"></div></div>
+                </div>
+                <div class="score-card">
+                    <div class="score-header"><i class="fas fa-robot"></i><span>ATS Score</span></div>
+                    <div class="score-value" id="atsScore">--</div>
+                    <div class="score-label">Applicant Tracking System</div>
+                    <div class="score-bar"><div class="score-bar-fill" id="atsScoreBar" style="width:0%"></div></div>
+                </div>
+                <div class="score-card">
+                    <div class="score-header"><i class="fas fa-check-circle"></i><span>Skills Match</span></div>
+                    <div class="score-value" id="skillMatchScore">--</div>
+                    <div class="score-label">Technical Alignment</div>
+                    <div class="score-bar"><div class="score-bar-fill" id="skillMatchBar" style="width:0%"></div></div>
+                </div>
+            </div>
+
+            <!-- Info Badges Row: Experience · Salary · Quantification · Gaps -->
+            <div class="info-badges" id="infoBadges">
+                <!-- populated by JS -->
+            </div>
+
+            <!-- Add to Job Tracker CTA -->
+            <div class="tracker-cta" id="trackerCta" style="display:none;">
+                <div class="tracker-cta-text">
+                    <strong>Track this application</strong>
+                    <small>Save this job to your Job Tracker to monitor your progress</small>
+                </div>
+                <button class="btn-gold" id="addToTrackerBtn"><i class="fas fa-plus"></i> Add to Job Tracker</button>
+            </div>
+
+            <!-- ATS Breakdown + Radar Chart -->
+            <div class="card">
+                <h3><i class="fas fa-chart-bar"></i> ATS Score Breakdown</h3>
+                <div style="display:grid;grid-template-columns:1fr auto;gap:24px;align-items:center;" class="ats-layout">
+                    <div class="ats-metrics" id="atsMetrics"></div>
+                    <div style="width:220px;height:220px;flex-shrink:0;" id="atsChartWrap">
+                        <canvas id="atsRadarChart"></canvas>
+                    </div>
+                </div>
+            </div>
+
+            <!-- AI Insights -->
+            <div class="card ai-insights" id="aiInsightsSection" style="display:none;">
+                <div class="ai-badge"><i class="fas fa-sparkles"></i> AI-Powered Insights</div>
+                <h3 style="border:none;padding:0;margin-bottom:16px;">Claude's Assessment</h3>
+                <div id="aiSummary" class="ai-summary"></div>
+
+                <div class="insights-grid">
+                    <div class="insight-box strengths">
+                        <h4><i class="fas fa-star"></i> Strengths</h4>
+                        <ul id="strengthsList"></ul>
+                    </div>
+                    <div class="insight-box weaknesses">
+                        <h4><i class="fas fa-exclamation-triangle"></i> Areas to Improve</h4>
+                        <ul id="weaknessesList"></ul>
+                    </div>
+                </div>
+
+                <!-- Interview Tips -->
+                <div id="interviewTipsSection" class="interview-tips-box" style="display:none;">
+                    <h4><i class="fas fa-comments"></i> Interview Tips</h4>
+                    <ul id="interviewTipsList"></ul>
+                </div>
+
+                <!-- Priority Banner -->
+                <div id="improvementPrioritySection" class="priority-banner" style="display:none;">
+                    <div class="priority-banner-icon"><i class="fas fa-flag"></i></div>
+                    <div>
+                        <div class="priority-banner-title">Top Priority Action</div>
+                        <div class="priority-banner-text" id="improvementPriorityText"></div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Skills Analysis -->
+            <div class="card">
+                <h3><i class="fas fa-code"></i> Skills Analysis</h3>
+                <div class="skills-section">
+                    <div class="skill-category">
+                        <h4><i class="fas fa-check" style="color:#16a34a;"></i> Found in Resume</h4>
+                        <div class="skill-tags" id="foundSkills"></div>
+                    </div>
+                    <div class="skill-category">
+                        <h4>
+                            <i class="fas fa-exclamation" style="color:var(--danger);"></i> Missing Skills
+                            <button class="copy-btn" id="copyMissingSkills" title="Copy to clipboard"><i class="fas fa-copy"></i> Copy</button>
+                        </h4>
+                        <div class="skill-tags missing" id="missingSkills"></div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Keyword Analysis -->
+            <div class="card">
+                <h3><i class="fas fa-key"></i> Keyword Analysis</h3>
+                <p style="font-size:0.82rem;color:var(--slate-light);margin-bottom:16px;margin-top:-12px;">
+                    <span class="kw-weight kw-high"></span> High importance &nbsp;
+                    <span class="kw-weight kw-medium"></span> Medium &nbsp;
+                    <span class="kw-weight kw-low"></span> Low
+                </p>
+                <div class="keywords-grid">
+                    <div class="keyword-section">
+                        <h4><i class="fas fa-check-circle" style="color:#16a34a;"></i> Matched Keywords</h4>
+                        <div class="keyword-tags" id="matchedKeywords"></div>
+                    </div>
+                    <div class="keyword-section">
+                        <h4>
+                            <i class="fas fa-times-circle" style="color:var(--danger);"></i> Missing Keywords
+                            <button class="copy-btn" id="copyMissingKw" title="Copy to clipboard"><i class="fas fa-copy"></i> Copy</button>
+                        </h4>
+                        <div class="keyword-tags missing" id="missingKeywords"></div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Recommendations -->
+            <div class="card recommendations">
+                <h3><i class="fas fa-lightbulb"></i> Actionable Recommendations</h3>
+                <div id="recommendationsList"></div>
+            </div>
+
+            <!-- Resume Statistics -->
+            <div class="card">
+                <h3><i class="fas fa-chart-pie"></i> Resume Statistics</h3>
+                <div class="stats-grid" id="statsGrid"></div>
+            </div>
+
+        </div><!-- end resultsSection -->
+    </div>
+</main>
+
+<!-- ── Footer ──────────────────────────────────────────── -->
+<footer class="footer">
+    <div class="container">
+        <div class="footer-content">
+            <div class="footer-brand">
+                <div class="brand-name"><i class="fas fa-brain"></i> ResumeIQ Pro</div>
+                <p>Professional AI-powered resume analysis for the modern job seeker. Land your next role with confidence.</p>
+            </div>
+            <div class="footer-section">
+                <h4>Features</h4>
+                <ul>
+                    <li><a href="#">AI Analysis</a></li>
+                    <li><a href="#">ATS Scoring</a></li>
+                    <li><a href="#">Salary Estimator</a></li>
+                    <li><a href="#">Job Tracker</a></li>
+                </ul>
+            </div>
+            <div class="footer-section">
+                <h4>Tools</h4>
+                <ul>
+                    <li><a href="/compare-page">Resume Comparison</a></li>
+                    <li><a href="/history-page">Analysis History</a></li>
+                    <li><a href="/jobs-page">Job Tracker</a></li>
+                    <li><a href="/profile-page">My Profile</a></li>
+                </ul>
+            </div>
+            <div class="footer-section">
+                <h4>Account</h4>
+                <ul>
+                    <li><a href="/login-page">Login</a></li>
+                    <li><a href="/register-page">Register</a></li>
+                    <li><a href="/profile-page">Settings</a></li>
+                </ul>
+            </div>
+        </div>
+        <div class="footer-bottom">
+            <p>&copy; 2026 ResumeIQ Pro. All rights reserved.</p>
+            <div class="footer-badge"><i class="fas fa-brain"></i> Enhanced with Claude AI</div>
+        </div>
+    </div>
+</footer>
+
+<script src="{{ url_for('static', filename='app.js') }}"></script>
 </body>
 </html>
