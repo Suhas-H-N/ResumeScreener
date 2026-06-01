@@ -373,3 +373,186 @@ def get_score_color(score: float) -> str:
         return "#f97316"  # Orange
     else:
         return "#ef4444"  # Red
+
+
+def detect_experience_level(resume_text: str) -> Dict[str, any]:
+    """
+    Detect candidate experience level from resume text.
+    Returns level (Junior/Mid/Senior/Lead/Executive) and confidence.
+    """
+    text_lower = resume_text.lower()
+
+    # Count years of experience from patterns like "5 years", "5+ years"
+    year_patterns = re.findall(r'(\d+)\+?\s*(?:years?|yrs?)(?:\s+of)?\s+(?:experience|exp)', text_lower)
+    explicit_years = max([int(y) for y in year_patterns], default=0)
+
+    # Count senior/lead/executive keywords
+    senior_kw = {"senior", "lead", "principal", "staff", "architect", "director", "vp", "vice president",
+                 "head of", "chief", "cto", "ceo", "coo", "president", "executive", "manager", "head"}
+    mid_kw = {"mid", "intermediate", "engineer ii", "engineer 2", "level 2", "l2", "associate"}
+    junior_kw = {"junior", "entry", "intern", "graduate", "fresher", "trainee", "assistant", "l1", "level 1",
+                 "new grad", "entry-level"}
+
+    senior_count = sum(1 for kw in senior_kw if kw in text_lower)
+    mid_count = sum(1 for kw in mid_kw if kw in text_lower)
+    junior_count = sum(1 for kw in junior_kw if kw in text_lower)
+
+    # Determine level
+    if explicit_years >= 12 or senior_count >= 3:
+        level = "Executive / Principal"
+        years_range = "12+ years"
+        color = "#7c3aed"
+    elif explicit_years >= 7 or senior_count >= 1:
+        level = "Senior"
+        years_range = "7–12 years"
+        color = "#2563eb"
+    elif explicit_years >= 3 or mid_count >= 1:
+        level = "Mid-Level"
+        years_range = "3–7 years"
+        color = "#059669"
+    elif explicit_years >= 1 or junior_count >= 1:
+        level = "Junior"
+        years_range = "1–3 years"
+        color = "#d97706"
+    else:
+        level = "Entry / Intern"
+        years_range = "0–1 years"
+        color = "#dc2626"
+
+    return {
+        "level": level,
+        "years_range": years_range,
+        "explicit_years_found": explicit_years,
+        "color": color
+    }
+
+
+def estimate_salary_range(resume_skills: set, experience_info: Dict) -> Dict[str, any]:
+    """
+    Estimate salary range based on skills and experience level.
+    Uses US market data (approximate, informational only).
+    """
+    level = experience_info.get("level", "Mid-Level")
+
+    # Base ranges by level (USD, annual)
+    base_ranges = {
+        "Entry / Intern":      (45_000,  75_000),
+        "Junior":              (70_000, 100_000),
+        "Mid-Level":           (95_000, 140_000),
+        "Senior":             (130_000, 190_000),
+        "Executive / Principal": (170_000, 280_000),
+    }
+
+    low, high = base_ranges.get(level, (80_000, 120_000))
+
+    # Premium skills boost
+    premium_skills = {
+        "machine learning", "deep learning", "tensorflow", "pytorch", "kubernetes",
+        "aws", "azure", "gcp", "rust", "scala", "kafka", "spark",
+        "solidity", "blockchain", "data science", "nlp", "computer vision"
+    }
+    premium_count = len(resume_skills & premium_skills)
+    boost = min(premium_count * 5_000, 30_000)
+    low += boost
+    high += boost
+
+    def fmt(n):
+        return f"${n // 1000}k"
+
+    return {
+        "low": fmt(low),
+        "high": fmt(high),
+        "range": f"{fmt(low)} – {fmt(high)}",
+        "currency": "USD",
+        "note": "Estimated US market range. Varies by location, company, and negotiation.",
+        "premium_skills_found": premium_count
+    }
+
+
+def calculate_quantification_score(resume_text: str) -> Dict[str, any]:
+    """
+    Score how well the resume uses quantifiable achievements.
+    Looks for numbers, percentages, dollar amounts, team sizes, etc.
+    """
+    # Patterns for quantified achievements
+    patterns = [
+        (r'\b\d+%', 'percentage'),
+        (r'\$[\d,]+(?:k|m|b)?', 'dollar_amount'),
+        (r'\b\d+[kKmMbB]\b', 'abbreviated_number'),
+        (r'\b(?:team of|led|managed|supervised)\s+\d+', 'team_size'),
+        (r'\b\d+x\b', 'multiplier'),
+        (r'\bincreased?\s+(?:by\s+)?\d+', 'increase'),
+        (r'\breduced?\s+(?:by\s+)?\d+', 'reduction'),
+        (r'\b\d+\s+(?:projects?|clients?|users?|customers?|products?)', 'count'),
+    ]
+
+    found = {}
+    total = 0
+    for pattern, name in patterns:
+        matches = re.findall(pattern, resume_text, re.IGNORECASE)
+        if matches:
+            found[name] = len(matches)
+            total += len(matches)
+
+    # Score: 0–100 based on total quantified items
+    if total >= 15:
+        score = 95
+        rating = "Excellent"
+    elif total >= 10:
+        score = 80
+        rating = "Strong"
+    elif total >= 6:
+        score = 60
+        rating = "Good"
+    elif total >= 3:
+        score = 40
+        rating = "Fair"
+    elif total >= 1:
+        score = 20
+        rating = "Weak"
+    else:
+        score = 0
+        rating = "No Metrics"
+
+    return {
+        "score": score,
+        "rating": rating,
+        "total_metrics_found": total,
+        "breakdown": found
+    }
+
+
+def detect_career_gaps(resume_text: str) -> Dict[str, any]:
+    """
+    Detect potential employment gaps by looking at year ranges.
+    Returns findings and advice.
+    """
+    # Find year ranges like 2019-2021, 2019 – 2021, Jan 2019 - Mar 2021
+    year_pattern = re.findall(r'(?:20\d{2}|19\d{2})', resume_text)
+    years = sorted(set(int(y) for y in year_pattern))
+
+    gaps = []
+    if len(years) >= 2:
+        for i in range(len(years) - 1):
+            gap = years[i + 1] - years[i]
+            if gap >= 2:
+                gaps.append({
+                    "from": years[i],
+                    "to": years[i + 1],
+                    "duration_years": gap
+                })
+
+    total_career_span = (years[-1] - years[0]) if len(years) >= 2 else 0
+    has_gaps = len(gaps) > 0
+
+    return {
+        "has_potential_gaps": has_gaps,
+        "gaps_found": gaps[:3],  # Max 3 to display
+        "years_detected": years,
+        "career_span_years": total_career_span,
+        "advice": (
+            "Potential gaps detected. Consider adding a brief explanation (freelance, education, personal projects) "
+            "in a cover letter or summary section." if has_gaps
+            else "No significant employment gaps detected."
+        )
+    }
