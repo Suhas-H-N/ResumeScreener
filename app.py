@@ -31,6 +31,10 @@ from nlp_utils import (
     generate_recommendations,
     classify_match_level,
     get_score_color,
+    detect_experience_level,
+    estimate_salary_range,
+    calculate_quantification_score,
+    detect_career_gaps,
 )
 from document_utils import DocumentProcessor
 from ai_service import get_ai_analyzer
@@ -339,7 +343,13 @@ def analyze_resume():
         recommendations = generate_recommendations(
             missing_kw, missing_skills, ats_scores, stats
         )
-        
+
+        # New enhanced features
+        experience_info = detect_experience_level(resume_text)
+        salary_estimate = estimate_salary_range(set(resume_skills), experience_info)
+        quantification = calculate_quantification_score(resume_text)
+        career_gaps = detect_career_gaps(resume_text)
+
         # Build basic result
         result = {
             'match_score': match_score,
@@ -353,6 +363,10 @@ def analyze_resume():
             'missing_skills': missing_skills[:20],
             'recommendations': recommendations,
             'stats': stats,
+            'experience_info': experience_info,
+            'salary_estimate': salary_estimate,
+            'quantification': quantification,
+            'career_gaps': career_gaps,
         }
         
         # AI Enhancement (if available)
@@ -746,6 +760,93 @@ def history_page():
 def profile_page():
     """User profile page"""
     return render_template('profile.html')
+
+
+@app.route('/jobs-page')
+def jobs_page():
+    """Job tracker page"""
+    return render_template('jobs.html')
+
+
+# ═══════════════════════════════════════════════════════════
+# PROFILE MANAGEMENT
+# ═══════════════════════════════════════════════════════════
+
+@app.route('/api/profile', methods=['PUT'])
+@login_required_api
+def update_profile():
+    """Update user profile info"""
+    user = get_current_user()
+    data = request.get_json()
+
+    name = data.get('name', '').strip()
+    company = data.get('company', '').strip()
+    role = data.get('role', '').strip()
+
+    if not name:
+        return jsonify({'error': 'Name is required'}), 400
+
+    try:
+        user.name = name
+        user.company = company or None
+        user.role = role or None
+        db.session.commit()
+
+        # Update session name
+        session['user_name'] = name
+
+        audit_log('profile_updated', user.id)
+        return jsonify({'message': 'Profile updated', 'user': user.to_dict()}), 200
+    except Exception as e:
+        db.session.rollback()
+        logger.error(f"Profile update error: {e}")
+        return jsonify({'error': 'Update failed'}), 500
+
+
+@app.route('/api/profile/password', methods=['PUT'])
+@login_required_api
+def change_password():
+    """Change user password"""
+    user = get_current_user()
+    data = request.get_json()
+
+    current_password = data.get('current_password', '')
+    new_password = data.get('new_password', '')
+
+    if not current_password or not new_password:
+        return jsonify({'error': 'Both current and new password required'}), 400
+
+    if not user.check_password(current_password):
+        return jsonify({'error': 'Current password is incorrect'}), 400
+
+    if len(new_password) < 8:
+        return jsonify({'error': 'New password must be at least 8 characters'}), 400
+
+    try:
+        user.set_password(new_password)
+        db.session.commit()
+        audit_log('password_changed', user.id)
+        return jsonify({'message': 'Password changed successfully'}), 200
+    except Exception as e:
+        db.session.rollback()
+        logger.error(f"Password change error: {e}")
+        return jsonify({'error': 'Password change failed'}), 500
+
+
+@app.route('/api/profile', methods=['DELETE'])
+@login_required_api
+def delete_account():
+    """Delete user account"""
+    user = get_current_user()
+    try:
+        db.session.delete(user)
+        db.session.commit()
+        session.clear()
+        return jsonify({'message': 'Account deleted'}), 200
+    except Exception as e:
+        db.session.rollback()
+        logger.error(f"Account delete error: {e}")
+        return jsonify({'error': 'Failed to delete account'}), 500
 
 
 # ═══════════════════════════════════════════════════════════
