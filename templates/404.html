@@ -1,36 +1,14 @@
 <!DOCTYPE html>
 <html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>404 Not Found - ResumeIQ Pro</title>
-    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    <style>
-        .error-page { display: flex; flex-direction: column; align-items: center; justify-content: center; min-height: 70vh; text-align: center; padding: 2rem; }
-        .error-code { font-size: 6rem; font-weight: 900; color: var(--primary); line-height: 1; }
-        .error-title { font-size: 1.75rem; font-weight: 700; margin: 1rem 0 0.5rem; }
-        .error-desc { color: var(--gray-500); max-width: 400px; margin-bottom: 2rem; }
-        .error-actions { display: flex; gap: 1rem; flex-wrap: wrap; justify-content: center; }
-    </style>
+<head><meta charset="UTF-8"><title>404 — ResumeIQ Pro</title>
+<link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
 </head>
-<body>
-    <nav class="navbar">
-        <div class="container">
-            <div class="nav-brand"><i class="fas fa-brain"></i><span>ResumeIQ Pro</span></div>
-            <div class="nav-links"><a href="/">Analyze</a></div>
-        </div>
-    </nav>
-    <main class="main-content">
-        <div class="error-page">
-            <div class="error-code">404</div>
-            <div class="error-title">Page Not Found</div>
-            <p class="error-desc">The page you're looking for doesn't exist or has been moved.</p>
-            <div class="error-actions">
-                <a href="/" class="btn-primary"><i class="fas fa-home"></i> Go Home</a>
-                <a href="/history-page" class="btn-secondary"><i class="fas fa-history"></i> My History</a>
-            </div>
-        </div>
-    </main>
-</body>
-</html>
+<body style="display:flex;align-items:center;justify-content:center;min-height:100vh;text-align:center;padding:2rem;background:var(--ivory);">
+<div>
+  <div style="font-size:5rem;font-weight:800;font-family:var(--font-mono);color:var(--navy);line-height:1;">404</div>
+  <h2 style="font-size:1.25rem;margin:0.5rem 0;">Page not found</h2>
+  <p style="color:var(--slate-light);margin-bottom:1.5rem;">The page you're looking for doesn't exist.</p>
+  <a href="/" class="btn btn-primary"><i class="fas fa-home"></i> Go Home</a>
+</div>
+</body></html>
