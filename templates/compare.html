@@ -3,253 +3,124 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Compare Resumes - ResumeIQ Pro</title>
+    <title>Compare Resumes — ResumeIQ Pro</title>
     <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
-        .compare-grid {
-            display: grid;
-            grid-template-columns: 1fr 1fr;
-            gap: 2rem;
-            margin-bottom: 2rem;
-        }
-        .comparison-results {
-            display: grid;
-            grid-template-columns: 1fr auto 1fr;
-            gap: 2rem;
-            align-items: center;
-        }
-        .vs-badge {
-            background: var(--navy);
-            color: white;
-            padding: 1rem;
-            border-radius: 50%;
-            font-weight: 700;
-            font-size: 1.5rem;
-            width: 60px;
-            height: 60px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-        }
-        .winner-badge {
-            background: var(--success-color);
-            color: white;
-            padding: 0.5rem 1rem;
-            border-radius: 0.5rem;
-            display: inline-block;
-            margin-top: 1rem;
-        }
-        @media (max-width: 768px) {
-            .compare-grid,
-            .comparison-results {
-                grid-template-columns: 1fr;
-            }
-            .vs-badge {
-                margin: 1rem auto;
-            }
-        }
+      .compare-layout { display:grid; grid-template-columns:1fr 1fr; gap:1.5rem; }
+      @media(max-width:768px){ .compare-layout{grid-template-columns:1fr;} }
+      .compare-metric { display:flex; justify-content:space-between; align-items:center; padding:8px 0; border-bottom:1px solid var(--border-soft); font-size:0.875rem; }
+      .compare-metric:last-child { border-bottom:none; }
     </style>
 </head>
-<body>
-    <nav class="navbar">
-        <div class="container">
-            <div class="nav-brand">
-                <i class="fas fa-brain"></i>
-                <span>ResumeIQ Pro</span>
-            </div>
-            <div class="nav-links">
-                <a href="/">Analyze</a>
-                <a href="/compare-page" class="active">Compare</a>
-                <a href="/history-page">History</a>
-                <a href="/jobs-page">Job Tracker</a>
-                <a href="/login-page" class="btn-primary" id="loginLink">Login</a>
-            </div>
+<body data-page="compare">
+
+<nav class="navbar">
+  <div class="container">
+    <a href="/" class="nav-brand"><i class="fas fa-brain"></i><span>ResumeIQ Pro</span></a>
+    <div class="nav-links">
+      <a href="/">Analyze</a>
+      <a href="/compare-page" class="active">Compare</a>
+      <a href="/history-page">History</a>
+      <a href="/jobs-page">Jobs</a>
+      <div class="user-menu" id="userMenu" style="display:none;">
+        <button class="btn-ghost" id="userMenuButton">
+          <i class="fas fa-user-circle"></i><span id="userName">Me</span>
+        </button>
+        <div class="dropdown-menu" id="userDropdown">
+          <a href="/profile-page"><i class="fas fa-user"></i> Profile</a>
+          <div class="dropdown-divider"></div>
+          <a href="#" id="logoutBtn"><i class="fas fa-sign-out-alt"></i> Sign Out</a>
         </div>
-    </nav>
+      </div>
+      <a href="/login-page" class="btn-primary" id="loginLink">Sign In</a>
+      <button id="themeToggle" style="background:none;border:1px solid rgba(255,255,255,0.2);border-radius:6px;padding:5px 9px;color:white;cursor:pointer;">🌙</button>
+    </div>
+  </div>
+</nav>
 
-    <section class="hero">
-        <div class="container">
-            <div class="hero-content">
-                <h1>Compare Two Resumes</h1>
-                <p class="hero-subtitle">See which resume performs better against a job description</p>
+<div class="main-content">
+  <div class="container" style="max-width:1100px;">
+
+    <div style="margin-bottom:1.75rem;">
+      <h1 style="font-size:1.6rem;font-weight:700;margin-bottom:4px;">Compare Two Resumes</h1>
+      <p style="color:var(--slate-light);font-size:0.9rem;">Side-by-side analysis to determine which resume is a better fit for a role.</p>
+    </div>
+
+    <form id="compareForm">
+      <!-- Two resume slots -->
+      <div class="compare-layout" style="margin-bottom:1.5rem;">
+
+        <!-- Resume A -->
+        <div class="form-card">
+          <h3 style="font-size:1rem;font-weight:700;margin-bottom:1rem;display:flex;align-items:center;gap:8px;">
+            <span style="background:var(--navy);color:white;width:26px;height:26px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:0.8rem;font-weight:700;">A</span>
+            Resume A
+          </h3>
+          <div class="upload-area" id="uploadAreaA">
+            <div class="upload-placeholder">
+              <i class="fas fa-cloud-upload-alt upload-icon"></i>
+              <div class="upload-text">Upload Resume A</div>
+              <div class="upload-hint">PDF, DOCX, TXT</div>
             </div>
+            <div class="file-preview" id="filePreviewA" style="display:none;">
+              <i class="fas fa-file-pdf"></i>
+              <div class="file-info">
+                <div class="file-name" id="fileNameA">—</div>
+                <div class="file-size" id="fileSizeA">—</div>
+              </div>
+              <button type="button" class="btn-remove" id="removeBtnA"><i class="fas fa-times"></i></button>
+            </div>
+            <input type="file" id="resumeAFile" accept=".pdf,.docx,.doc,.txt" style="display:none;">
+          </div>
+          <div class="form-divider"><span>or paste</span></div>
+          <textarea id="resumeAText" class="form-textarea" placeholder="Paste Resume A text…" rows="6"></textarea>
         </div>
-    </section>
 
-    <main class="main-content">
-        <div class="container">
-            <div class="compare-grid">
-                <!-- Resume A -->
-                <div class="card">
-                    <h3><i class="fas fa-file-alt"></i> Resume A</h3>
-                    <div class="upload-area" id="uploadAreaA">
-                        <input type="file" id="resumeFileA" accept=".pdf,.docx,.txt" hidden>
-                        <div class="upload-placeholder">
-                            <i class="fas fa-cloud-upload-alt"></i>
-                            <p><span class="upload-link">Upload Resume A</span></p>
-                        </div>
-                    </div>
-                    <textarea id="resumeTextA" rows="6" placeholder="Or paste resume text..."></textarea>
-                </div>
-
-                <!-- Resume B -->
-                <div class="card">
-                    <h3><i class="fas fa-file-alt"></i> Resume B</h3>
-                    <div class="upload-area" id="uploadAreaB">
-                        <input type="file" id="resumeFileB" accept=".pdf,.docx,.txt" hidden>
-                        <div class="upload-placeholder">
-                            <i class="fas fa-cloud-upload-alt"></i>
-                            <p><span class="upload-link">Upload Resume B</span></p>
-                        </div>
-                    </div>
-                    <textarea id="resumeTextB" rows="6" placeholder="Or paste resume text..."></textarea>
-                </div>
+        <!-- Resume B -->
+        <div class="form-card">
+          <h3 style="font-size:1rem;font-weight:700;margin-bottom:1rem;display:flex;align-items:center;gap:8px;">
+            <span style="background:var(--gold);color:white;width:26px;height:26px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:0.8rem;font-weight:700;">B</span>
+            Resume B
+          </h3>
+          <div class="upload-area" id="uploadAreaB">
+            <div class="upload-placeholder">
+              <i class="fas fa-cloud-upload-alt upload-icon"></i>
+              <div class="upload-text">Upload Resume B</div>
+              <div class="upload-hint">PDF, DOCX, TXT</div>
             </div>
-
-            <!-- Job Description -->
-            <div class="card">
-                <h3><i class="fas fa-briefcase"></i> Job Description</h3>
-                <textarea id="jobDescription" rows="8" placeholder="Paste the job description here..."></textarea>
-                <button class="btn-primary btn-large" id="compareBtn" style="margin-top: 1rem;">
-                    <i class="fas fa-balance-scale"></i> Compare Resumes
-                </button>
+            <div class="file-preview" id="filePreviewB" style="display:none;">
+              <i class="fas fa-file-pdf"></i>
+              <div class="file-info">
+                <div class="file-name" id="fileNameB">—</div>
+                <div class="file-size" id="fileSizeB">—</div>
+              </div>
+              <button type="button" class="btn-remove" id="removeBtnB"><i class="fas fa-times"></i></button>
             </div>
-
-            <!-- Loading -->
-            <div class="loading-state" id="loadingState" style="display: none;">
-                <div class="spinner"></div>
-                <p>Comparing resumes...</p>
-            </div>
-
-            <!-- Results -->
-            <div id="resultsSection" style="display: none;">
-                <h2 style="text-align: center; margin-bottom: 2rem;">Comparison Results</h2>
-                
-                <div class="comparison-results">
-                    <!-- Resume A Results -->
-                    <div class="card">
-                        <h3 id="resumeAName">Resume A</h3>
-                        <div class="score-value" id="scoreA" style="color: var(--navy);">--</div>
-                        <p>Match Score</p>
-                        <div class="score-value" id="atsScoreA" style="color: var(--navy); font-size: 2rem;">--</div>
-                        <p>ATS Score</p>
-                        <div id="winnerBadgeA"></div>
-                    </div>
-
-                    <!-- VS Badge -->
-                    <div class="vs-badge">VS</div>
-
-                    <!-- Resume B Results -->
-                    <div class="card">
-                        <h3 id="resumeBName">Resume B</h3>
-                        <div class="score-value" id="scoreB" style="color: var(--navy);">--</div>
-                        <p>Match Score</p>
-                        <div class="score-value" id="atsScoreB" style="color: var(--navy); font-size: 2rem;">--</div>
-                        <p>ATS Score</p>
-                        <div id="winnerBadgeB"></div>
-                    </div>
-                </div>
-
-                <div class="card" style="margin-top: 2rem;">
-                    <h3>Detailed Breakdown</h3>
-                    <div id="detailsSection"></div>
-                </div>
-            </div>
+            <input type="file" id="resumeBFile" accept=".pdf,.docx,.doc,.txt" style="display:none;">
+          </div>
+          <div class="form-divider"><span>or paste</span></div>
+          <textarea id="resumeBText" class="form-textarea" placeholder="Paste Resume B text…" rows="6"></textarea>
         </div>
-    </main>
+      </div>
 
-    <footer class="footer">
-        <div class="container">
-            <div class="footer-bottom">
-                <p>&copy; 2026 ResumeIQ Pro. Enhanced with Claude AI.</p>
-            </div>
-        </div>
-    </footer>
+      <!-- Job description -->
+      <div class="form-card" style="margin-bottom:1.5rem;">
+        <h3 style="font-size:1rem;font-weight:700;margin-bottom:0.75rem;"><i class="fas fa-briefcase"></i> Job Description</h3>
+        <textarea id="compareJobDesc" class="form-textarea" placeholder="Paste the job description to compare against…" rows="6" required></textarea>
+      </div>
 
-    <script>
-        let fileA = null, fileB = null;
+      <button type="submit" class="btn btn-primary btn-lg" id="compareBtn" style="width:100%;">
+        <i class="fas fa-balance-scale"></i> Compare Resumes
+      </button>
+    </form>
 
-        // Setup file uploads
-        ['A', 'B'].forEach(letter => {
-            const area = document.getElementById(`uploadArea${letter}`);
-            const input = document.getElementById(`resumeFile${letter}`);
-            
-            area.addEventListener('click', () => input.click());
-            input.addEventListener('change', () => {
-                if (letter === 'A') fileA = input.files[0];
-                else fileB = input.files[0];
-            });
-        });
+    <!-- Results -->
+    <div id="compareResults" style="display:none;margin-top:2rem;"></div>
 
-        document.getElementById('compareBtn').addEventListener('click', async () => {
-            const textA = document.getElementById('resumeTextA').value.trim();
-            const textB = document.getElementById('resumeTextB').value.trim();
-            const jobDesc = document.getElementById('jobDescription').value.trim();
+  </div>
+</div>
 
-            if ((!fileA && !textA) || (!fileB && !textB)) {
-                alert('Please provide both resumes');
-                return;
-            }
-
-            if (!jobDesc) {
-                alert('Please provide a job description');
-                return;
-            }
-
-            const formData = new FormData();
-            if (fileA) formData.append('resume_a_file', fileA);
-            else formData.append('resume_a', textA);
-            
-            if (fileB) formData.append('resume_b_file', fileB);
-            else formData.append('resume_b', textB);
-            
-            formData.append('job_description', jobDesc);
-
-            document.getElementById('loadingState').style.display = 'block';
-            document.getElementById('resultsSection').style.display = 'none';
-
-            try {
-                const response = await fetch('/api/compare', {
-                    method: 'POST',
-                    body: formData
-                });
-
-                const data = await response.json();
-
-                if (!response.ok) throw new Error(data.error);
-
-                displayResults(data);
-            } catch (error) {
-                alert(error.message || 'Comparison failed');
-            } finally {
-                document.getElementById('loadingState').style.display = 'none';
-            }
-        });
-
-        function displayResults(data) {
-            document.getElementById('resultsSection').style.display = 'block';
-            
-            document.getElementById('resumeAName').textContent = data.resume_a_name;
-            document.getElementById('resumeBName').textContent = data.resume_b_name;
-            
-            document.getElementById('scoreA').textContent = data.resume_a.match_score + '%';
-            document.getElementById('scoreB').textContent = data.resume_b.match_score + '%';
-            
-            document.getElementById('atsScoreA').textContent = data.resume_a.ats_score + '%';
-            document.getElementById('atsScoreB').textContent = data.resume_b.ats_score + '%';
-
-            // Show winner
-            if (data.winner === 'A') {
-                document.getElementById('winnerBadgeA').innerHTML = '<span class="winner-badge">🏆 Winner</span>';
-                document.getElementById('winnerBadgeB').innerHTML = '';
-            } else {
-                document.getElementById('winnerBadgeB').innerHTML = '<span class="winner-badge">🏆 Winner</span>';
-                document.getElementById('winnerBadgeA').innerHTML = '';
-            }
-
-            document.getElementById('resultsSection').scrollIntoView({ behavior: 'smooth' });
-        }
-    </script>
+<script src="{{ url_for('static', filename='app.js') }}"></script>
 </body>
 </html>
