@@ -3,287 +3,130 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>My Profile - ResumeIQ Pro</title>
+    <title>Profile — ResumeIQ Pro</title>
     <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
-        .profile-grid { display: grid; grid-template-columns: 1fr 2fr; gap: 2rem; align-items: start; }
-        .profile-avatar-card { text-align: center; padding: 2rem; }
-        .avatar-circle {
-            width: 100px; height: 100px; border-radius: 50%;
-            background: linear-gradient(135deg, #6366f1, #8b5cf6);
-            display: flex; align-items: center; justify-content: center;
-            font-size: 2.5rem; color: white; font-weight: 700;
-            margin: 0 auto 1rem;
-        }
-        .profile-name { font-size: 1.25rem; font-weight: 700; margin-bottom: 0.25rem; }
-        .profile-email { color: var(--slate-light); font-size: 0.9rem; }
-        .profile-tier {
-            display: inline-block; margin-top: 0.75rem;
-            padding: 0.25rem 0.75rem; border-radius: 1rem;
-            background: #ede9fe; color: #6d28d9; font-size: 0.8rem; font-weight: 600;
-        }
-        .stat-row { display: grid; grid-template-columns: repeat(3, 1fr); gap: 1rem; margin: 1.5rem 0; }
-        .stat-box { background: var(--ivory); border-radius: 0.75rem; padding: 1rem; text-align: center; }
-        .stat-box .val { font-size: 1.75rem; font-weight: 700; color: var(--navy); }
-        .stat-box .lbl { font-size: 0.75rem; color: var(--slate-light); margin-top: 0.25rem; }
-        .form-group { margin-bottom: 1.25rem; }
-        .form-group label { display: block; font-weight: 600; margin-bottom: 0.4rem; font-size: 0.9rem; }
-        .form-group input { width: 100%; padding: 0.65rem 0.9rem; border: 1px solid var(--border); border-radius: 0.5rem; font-size: 0.95rem; }
-        .form-group input:focus { outline: none; border-color: var(--navy); box-shadow: 0 0 0 3px rgba(99,102,241,0.1); }
-        .form-row-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; }
-        .danger-zone { border: 1px solid #fca5a5; border-radius: 0.75rem; padding: 1.5rem; margin-top: 1.5rem; }
-        .danger-zone h4 { color: #dc2626; margin-bottom: 0.5rem; }
-        .btn-danger { background: #dc2626; color: white; border: none; padding: 0.6rem 1.25rem; border-radius: 0.5rem; cursor: pointer; font-weight: 600; }
-        .btn-danger:hover { background: #b91c1c; }
-        .success-msg { background: #d1fae5; color: #065f46; padding: 0.75rem 1rem; border-radius: 0.5rem; margin-bottom: 1rem; display: none; }
-        .error-msg { background: #fee2e2; color: #991b1b; padding: 0.75rem 1rem; border-radius: 0.5rem; margin-bottom: 1rem; display: none; }
-        @media (max-width: 768px) { .profile-grid { grid-template-columns: 1fr; } .form-row-2 { grid-template-columns: 1fr; } .stat-row { grid-template-columns: repeat(3,1fr); } }
+      .profile-avatar { width:72px;height:72px;background:linear-gradient(135deg,var(--navy-soft),var(--navy));border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:1.8rem;font-weight:700;color:var(--gold-light);flex-shrink:0; }
+      .stat-mini { text-align:center;padding:1rem;background:var(--ivory);border:1px solid var(--border-soft);border-radius:var(--radius-lg); }
+      .stat-mini-val { font-size:1.5rem;font-weight:800;font-family:var(--font-mono);color:var(--navy); }
+      .stat-mini-lbl { font-size:0.72rem;text-transform:uppercase;letter-spacing:0.06em;color:var(--slate-light);font-weight:700;margin-top:4px; }
     </style>
 </head>
-<body>
-    <nav class="navbar">
-        <div class="container">
-            <div class="nav-brand"><i class="fas fa-brain"></i><span>ResumeIQ Pro</span></div>
-            <div class="nav-links">
-                <a href="/">Analyze</a>
-                <a href="/compare-page">Compare</a>
-                <a href="/history-page">History</a>
-                <a href="/jobs-page">Job Tracker</a>
-                <div class="user-menu" id="userMenu">
-                    <button class="btn-ghost" id="userMenuButton">
-                        <i class="fas fa-user-circle"></i>
-                        <span id="userName">Profile</span>
-                    </button>
-                    <div class="dropdown-menu" id="userDropdown">
-                        <a href="/profile-page" class="active"><i class="fas fa-user"></i> Profile</a>
-                        <a href="#" id="logoutBtn"><i class="fas fa-sign-out-alt"></i> Logout</a>
-                    </div>
-                </div>
-                <a href="/login-page" class="btn-primary" id="loginLink" style="display:none;">Login</a>
+<body data-page="profile">
+
+<nav class="navbar">
+  <div class="container">
+    <a href="/" class="nav-brand"><i class="fas fa-brain"></i><span>ResumeIQ Pro</span></a>
+    <div class="nav-links">
+      <a href="/">Analyze</a>
+      <a href="/compare-page">Compare</a>
+      <a href="/history-page">History</a>
+      <a href="/jobs-page">Jobs</a>
+      <div class="user-menu" id="userMenu" style="display:none;">
+        <button class="btn-ghost" id="userMenuButton">
+          <i class="fas fa-user-circle"></i><span id="userName">Me</span>
+        </button>
+        <div class="dropdown-menu" id="userDropdown">
+          <a href="/profile-page"><i class="fas fa-user"></i> Profile</a>
+          <div class="dropdown-divider"></div>
+          <a href="#" id="logoutBtn"><i class="fas fa-sign-out-alt"></i> Sign Out</a>
+        </div>
+      </div>
+      <a href="/login-page" class="btn-primary" id="loginLink">Sign In</a>
+      <button id="themeToggle" style="background:none;border:1px solid rgba(255,255,255,0.2);border-radius:6px;padding:5px 9px;color:white;cursor:pointer;">🌙</button>
+    </div>
+  </div>
+</nav>
+
+<div class="main-content">
+  <div class="container" style="max-width:800px;">
+
+    <!-- Profile header -->
+    <div style="display:flex;align-items:center;gap:1.25rem;margin-bottom:2rem;padding:1.5rem;background:white;border:1px solid var(--border-soft);border-radius:var(--radius-xl);box-shadow:var(--shadow-sm);">
+      <div class="profile-avatar" id="profileAvatar">?</div>
+      <div>
+        <h1 style="font-size:1.4rem;font-weight:700;" id="profileNameDisplay">—</h1>
+        <p style="color:var(--slate-light);font-size:0.875rem;" id="profileEmailDisplay">—</p>
+      </div>
+    </div>
+
+    <!-- Stats row -->
+    <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin-bottom:2rem;">
+      <div class="stat-mini"><div class="stat-mini-val" id="statTotal">—</div><div class="stat-mini-lbl">Analyses</div></div>
+      <div class="stat-mini"><div class="stat-mini-val" id="statAvg">—</div><div class="stat-mini-lbl">Avg Match</div></div>
+      <div class="stat-mini"><div class="stat-mini-val" id="statAts">—</div><div class="stat-mini-lbl">Avg ATS</div></div>
+      <div class="stat-mini"><div class="stat-mini-val" id="statBest">—</div><div class="stat-mini-lbl">Best Score</div></div>
+    </div>
+
+    <!-- Tabs -->
+    <div id="profileTabs">
+      <div class="tab-bar">
+        <button class="tab-btn" data-tab="tabInfo">Profile</button>
+        <button class="tab-btn" data-tab="tabSecurity">Security</button>
+        <button class="tab-btn" data-tab="tabDanger">Danger Zone</button>
+      </div>
+
+      <!-- Profile info -->
+      <div class="tab-pane results-card" id="tabInfo">
+        <h3 style="margin-bottom:1.25rem;">Personal Information</h3>
+        <form id="profileForm">
+          <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;">
+            <div class="field-group">
+              <label class="field-label">Full Name *</label>
+              <input type="text" id="profileName" class="form-input" required>
             </div>
-        </div>
-    </nav>
-
-    <main class="main-content">
-        <div class="container">
-            <div class="profile-grid">
-                <!-- Left: Avatar + Stats -->
-                <div>
-                    <div class="card profile-avatar-card">
-                        <div class="avatar-circle" id="avatarInitials">?</div>
-                        <div class="profile-name" id="profileName">Loading...</div>
-                        <div class="profile-email" id="profileEmail"></div>
-                        <div class="profile-tier" id="profileTier">Free</div>
-                    </div>
-                    <div class="card" style="margin-top:1rem;">
-                        <h4 style="margin-bottom:1rem;"><i class="fas fa-chart-bar"></i> Your Stats</h4>
-                        <div class="stat-row">
-                            <div class="stat-box"><div class="val" id="statTotal">—</div><div class="lbl">Analyses</div></div>
-                            <div class="stat-box"><div class="val" id="statAvgMatch">—</div><div class="lbl">Avg Match</div></div>
-                            <div class="stat-box"><div class="val" id="statAvgAts">—</div><div class="lbl">Avg ATS</div></div>
-                        </div>
-                        <p style="font-size:0.8rem;color:var(--slate-light);margin-top:0.5rem;text-align:center;" id="memberSince"></p>
-                    </div>
-                </div>
-
-                <!-- Right: Edit Form -->
-                <div>
-                    <div class="card">
-                        <h3><i class="fas fa-user-edit"></i> Edit Profile</h3>
-                        <p class="section-description">Update your personal information</p>
-
-                        <div id="successMsg" class="success-msg"><i class="fas fa-check-circle"></i> Profile updated successfully!</div>
-                        <div id="errorMsg" class="error-msg"><i class="fas fa-exclamation-circle"></i> <span id="errorText">Update failed.</span></div>
-
-                        <div class="form-row-2">
-                            <div class="form-group">
-                                <label for="editName">Full Name</label>
-                                <input type="text" id="editName" placeholder="Your full name">
-                            </div>
-                            <div class="form-group">
-                                <label for="editEmail">Email</label>
-                                <input type="email" id="editEmail" placeholder="your@email.com" disabled style="background:var(--ivory);cursor:not-allowed;">
-                            </div>
-                        </div>
-                        <div class="form-row-2">
-                            <div class="form-group">
-                                <label for="editCompany">Company / Organization</label>
-                                <input type="text" id="editCompany" placeholder="e.g., Google">
-                            </div>
-                            <div class="form-group">
-                                <label for="editRole">Job Title / Role</label>
-                                <input type="text" id="editRole" placeholder="e.g., Software Engineer">
-                            </div>
-                        </div>
-
-                        <button class="btn-primary" id="saveProfileBtn">
-                            <i class="fas fa-save"></i> Save Changes
-                        </button>
-                    </div>
-
-                    <div class="card" style="margin-top:1rem;">
-                        <h3><i class="fas fa-lock"></i> Change Password</h3>
-                        <div class="form-group">
-                            <label for="currentPassword">Current Password</label>
-                            <input type="password" id="currentPassword" placeholder="Enter current password">
-                        </div>
-                        <div class="form-row-2">
-                            <div class="form-group">
-                                <label for="newPassword">New Password</label>
-                                <input type="password" id="newPassword" placeholder="Min 8 characters">
-                            </div>
-                            <div class="form-group">
-                                <label for="confirmPassword">Confirm Password</label>
-                                <input type="password" id="confirmPassword" placeholder="Repeat new password">
-                            </div>
-                        </div>
-                        <button class="btn-secondary" id="changePasswordBtn">
-                            <i class="fas fa-key"></i> Update Password
-                        </button>
-                    </div>
-
-                    <div class="danger-zone">
-                        <h4><i class="fas fa-exclamation-triangle"></i> Danger Zone</h4>
-                        <p style="color:var(--slate-light);font-size:0.9rem;margin-bottom:1rem;">Permanently delete your account and all associated data.</p>
-                        <button class="btn-danger" id="deleteAccountBtn">Delete Account</button>
-                    </div>
-                </div>
+            <div class="field-group">
+              <label class="field-label">Email</label>
+              <input type="email" id="profileEmail" class="form-input" disabled
+                     style="opacity:0.6;cursor:not-allowed;" title="Email cannot be changed">
             </div>
-        </div>
-    </main>
+            <div class="field-group">
+              <label class="field-label">Company / Organisation</label>
+              <input type="text" id="profileCompany" class="form-input" placeholder="Where you work">
+            </div>
+            <div class="field-group">
+              <label class="field-label">Current Role</label>
+              <input type="text" id="profileRole" class="form-input" placeholder="e.g. Software Engineer">
+            </div>
+          </div>
+          <button type="submit" class="btn btn-primary" style="margin-top:1rem;"><i class="fas fa-save"></i> Save Changes</button>
+        </form>
+      </div>
 
-    <footer class="footer">
-        <div class="container">
-            <div class="footer-bottom"><p>&copy; 2026 ResumeIQ Pro. Enhanced with Claude AI.</p></div>
-        </div>
-    </footer>
+      <!-- Security -->
+      <div class="tab-pane results-card" id="tabSecurity">
+        <h3 style="margin-bottom:1.25rem;">Change Password</h3>
+        <form id="passwordForm" style="max-width:480px;">
+          <div class="field-group">
+            <label class="field-label">Current Password</label>
+            <input type="password" id="currentPassword" class="form-input" required autocomplete="current-password">
+          </div>
+          <div class="field-group">
+            <label class="field-label">New Password</label>
+            <input type="password" id="newPassword" class="form-input" required minlength="8" autocomplete="new-password">
+          </div>
+          <div class="field-group">
+            <label class="field-label">Confirm New Password</label>
+            <input type="password" id="confirmPassword" class="form-input" required autocomplete="new-password">
+          </div>
+          <button type="submit" class="btn btn-primary"><i class="fas fa-lock"></i> Update Password</button>
+        </form>
+      </div>
 
-    <script>
-        async function loadProfile() {
-            try {
-                const [meRes, statsRes] = await Promise.all([
-                    fetch('/api/me'),
-                    fetch('/api/stats')
-                ]);
-                const me = await meRes.json();
-                const stats = statsRes.ok ? await statsRes.json() : null;
+      <!-- Danger -->
+      <div class="tab-pane results-card" id="tabDanger">
+        <h3 style="margin-bottom:0.5rem;color:#dc2626;">Danger Zone</h3>
+        <p style="font-size:0.875rem;color:var(--slate-light);margin-bottom:1.25rem;">
+          Deleting your account is permanent. All analyses, comparisons, and job applications will be erased.
+        </p>
+        <button class="btn btn-danger" id="deleteAccountBtn"><i class="fas fa-trash-alt"></i> Delete My Account</button>
+      </div>
+    </div>
 
-                if (!me.logged_in) {
-                    window.location.href = '/login-page';
-                    return;
-                }
+  </div>
+</div>
 
-                const u = me.user;
-                document.getElementById('avatarInitials').textContent = (u.name || 'U')[0].toUpperCase();
-                document.getElementById('profileName').textContent = u.name;
-                document.getElementById('profileEmail').textContent = u.email;
-                document.getElementById('profileTier').textContent = (u.subscription_tier || 'free').charAt(0).toUpperCase() + (u.subscription_tier || 'free').slice(1);
-                document.getElementById('editName').value = u.name || '';
-                document.getElementById('editEmail').value = u.email || '';
-                document.getElementById('editCompany').value = u.company || '';
-                document.getElementById('editRole').value = u.role || '';
-                document.getElementById('userName').textContent = u.name;
-                document.getElementById('loginLink').style.display = 'none';
-                document.getElementById('userMenu').style.display = 'block';
-
-                if (stats) {
-                    document.getElementById('statTotal').textContent = stats.total_analyses;
-                    document.getElementById('statAvgMatch').textContent = stats.avg_match_score + '%';
-                    document.getElementById('statAvgAts').textContent = stats.avg_ats_score + '%';
-                    if (stats.member_since) {
-                        const d = new Date(stats.member_since);
-                        document.getElementById('memberSince').textContent = 'Member since ' + d.toLocaleDateString('en-US', {month:'long', year:'numeric'});
-                    }
-                }
-            } catch (err) {
-                console.error(err);
-            }
-        }
-
-        document.getElementById('saveProfileBtn').addEventListener('click', async () => {
-            const name = document.getElementById('editName').value.trim();
-            const company = document.getElementById('editCompany').value.trim();
-            const role = document.getElementById('editRole').value.trim();
-
-            if (!name) { showError('Name is required.'); return; }
-
-            try {
-                const res = await fetch('/api/profile', {
-                    method: 'PUT',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ name, company, role })
-                });
-                const data = await res.json();
-                if (res.ok) {
-                    document.getElementById('successMsg').style.display = 'block';
-                    document.getElementById('errorMsg').style.display = 'none';
-                    document.getElementById('profileName').textContent = name;
-                    document.getElementById('avatarInitials').textContent = name[0].toUpperCase();
-                    document.getElementById('userName').textContent = name;
-                    setTimeout(() => document.getElementById('successMsg').style.display = 'none', 3000);
-                } else {
-                    showError(data.error || 'Update failed.');
-                }
-            } catch (err) { showError('Network error.'); }
-        });
-
-        document.getElementById('changePasswordBtn').addEventListener('click', async () => {
-            const current = document.getElementById('currentPassword').value;
-            const newPass = document.getElementById('newPassword').value;
-            const confirm = document.getElementById('confirmPassword').value;
-
-            if (!current || !newPass || !confirm) { showError('All password fields are required.'); return; }
-            if (newPass !== confirm) { showError('New passwords do not match.'); return; }
-            if (newPass.length < 8) { showError('Password must be at least 8 characters.'); return; }
-
-            try {
-                const res = await fetch('/api/profile/password', {
-                    method: 'PUT',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ current_password: current, new_password: newPass })
-                });
-                const data = await res.json();
-                if (res.ok) {
-                    document.getElementById('successMsg').style.display = 'block';
-                    document.getElementById('errorMsg').style.display = 'none';
-                    document.getElementById('currentPassword').value = '';
-                    document.getElementById('newPassword').value = '';
-                    document.getElementById('confirmPassword').value = '';
-                    setTimeout(() => document.getElementById('successMsg').style.display = 'none', 3000);
-                } else {
-                    showError(data.error || 'Password update failed.');
-                }
-            } catch (err) { showError('Network error.'); }
-        });
-
-        document.getElementById('deleteAccountBtn').addEventListener('click', () => {
-            if (confirm('Are you SURE you want to delete your account? This cannot be undone.')) {
-                fetch('/api/profile', { method: 'DELETE' })
-                    .then(r => r.ok ? window.location.href = '/' : alert('Delete failed.'))
-                    .catch(() => alert('Network error.'));
-            }
-        });
-
-        document.getElementById('logoutBtn')?.addEventListener('click', async (e) => {
-            e.preventDefault();
-            await fetch('/api/logout', { method: 'POST' });
-            window.location.href = '/';
-        });
-
-        document.getElementById('userMenuButton')?.addEventListener('click', (e) => {
-            e.stopPropagation();
-            document.getElementById('userDropdown').classList.toggle('show');
-        });
-        document.addEventListener('click', () => document.getElementById('userDropdown')?.classList.remove('show'));
-
-        function showError(msg) {
-            document.getElementById('errorText').textContent = msg;
-            document.getElementById('errorMsg').style.display = 'block';
-            document.getElementById('successMsg').style.display = 'none';
-        }
-
-        loadProfile();
-    </script>
+<script src="{{ url_for('static', filename='app.js') }}"></script>
 </body>
 </html>
