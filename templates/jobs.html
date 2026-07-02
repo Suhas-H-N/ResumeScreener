@@ -3,370 +3,136 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Job Tracker - ResumeIQ Pro</title>
+    <title>Job Tracker — ResumeIQ Pro</title>
     <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    <style>
-        .tracker-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.5rem; flex-wrap: wrap; gap: 1rem; }
-        .filter-bar { display: flex; gap: 0.75rem; flex-wrap: wrap; margin-bottom: 1.5rem; }
-        .filter-btn { padding: 0.4rem 1rem; border-radius: 2rem; border: 1.5px solid var(--gray-300); background: white; cursor: pointer; font-size: 0.875rem; font-weight: 500; transition: all 0.2s; }
-        .filter-btn.active, .filter-btn:hover { background: var(--primary); color: white; border-color: var(--primary); }
-        .jobs-grid { display: grid; gap: 1rem; }
-        .job-card {
-            border: 1px solid var(--gray-200); border-radius: 0.75rem; padding: 1.25rem;
-            display: grid; grid-template-columns: 1fr auto; gap: 1rem; align-items: start;
-            transition: box-shadow 0.2s; background: white;
-        }
-        .job-card:hover { box-shadow: 0 4px 12px rgba(0,0,0,0.08); }
-        .job-title { font-size: 1rem; font-weight: 700; margin-bottom: 0.25rem; }
-        .job-company { color: var(--gray-600); font-size: 0.9rem; margin-bottom: 0.5rem; }
-        .job-meta { display: flex; gap: 1rem; flex-wrap: wrap; font-size: 0.8rem; color: var(--gray-500); }
-        .job-meta span { display: flex; align-items: center; gap: 0.3rem; }
-        .status-badge {
-            display: inline-flex; align-items: center; gap: 0.4rem;
-            padding: 0.3rem 0.8rem; border-radius: 2rem; font-size: 0.8rem; font-weight: 600; white-space: nowrap;
-        }
-        .status-saved { background: #eff6ff; color: #1d4ed8; }
-        .status-applied { background: #fef3c7; color: #92400e; }
-        .status-interview { background: #ede9fe; color: #6d28d9; }
-        .status-offer { background: #d1fae5; color: #065f46; }
-        .status-rejected { background: #fee2e2; color: #991b1b; }
-        .job-actions { display: flex; gap: 0.5rem; margin-top: 0.75rem; }
-        .btn-xs { padding: 0.3rem 0.7rem; font-size: 0.8rem; border-radius: 0.35rem; border: 1px solid var(--gray-300); background: white; cursor: pointer; font-weight: 500; transition: all 0.2s; }
-        .btn-xs:hover { background: var(--gray-100); }
-        .btn-xs.danger:hover { background: #fee2e2; border-color: #fca5a5; color: #dc2626; }
-        /* Modal */
-        .modal-overlay { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.5); z-index: 1000; justify-content: center; align-items: center; }
-        .modal-overlay.open { display: flex; }
-        .modal { background: white; border-radius: 1rem; padding: 2rem; width: 100%; max-width: 560px; max-height: 90vh; overflow-y: auto; }
-        .modal-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.5rem; }
-        .modal-title { font-size: 1.2rem; font-weight: 700; }
-        .modal-close { background: none; border: none; cursor: pointer; font-size: 1.25rem; color: var(--gray-500); }
-        .form-group { margin-bottom: 1rem; }
-        .form-group label { display: block; font-weight: 600; margin-bottom: 0.35rem; font-size: 0.875rem; }
-        .form-group input, .form-group select, .form-group textarea { width: 100%; padding: 0.6rem 0.9rem; border: 1px solid var(--gray-300); border-radius: 0.5rem; font-size: 0.9rem; }
-        .form-group textarea { resize: vertical; }
-        .form-row-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; }
-        .summary-cards { display: grid; grid-template-columns: repeat(5, 1fr); gap: 0.75rem; margin-bottom: 1.5rem; }
-        .summary-card { background: white; border: 1px solid var(--gray-200); border-radius: 0.75rem; padding: 1rem; text-align: center; }
-        .summary-card .s-val { font-size: 1.5rem; font-weight: 700; }
-        .summary-card .s-lbl { font-size: 0.72rem; color: var(--gray-500); margin-top: 0.2rem; }
-        .empty-state { text-align: center; padding: 3rem 2rem; color: var(--gray-500); }
-        .empty-state i { font-size: 3rem; margin-bottom: 1rem; display: block; }
-        @media (max-width: 640px) { .summary-cards { grid-template-columns: repeat(3,1fr); } .form-row-2 { grid-template-columns: 1fr; } }
-    </style>
 </head>
-<body>
-    <nav class="navbar">
-        <div class="container">
-            <div class="nav-brand"><i class="fas fa-brain"></i><span>ResumeIQ Pro</span></div>
-            <div class="nav-links">
-                <a href="/">Analyze</a>
-                <a href="/compare-page">Compare</a>
-                <a href="/history-page">History</a>
-                <a href="/jobs-page" class="active">Job Tracker</a>
-                <div class="user-menu" id="userMenu" style="display:none;">
-                    <button class="btn-ghost" id="userMenuButton">
-                        <i class="fas fa-user-circle"></i>
-                        <span id="userName">Me</span>
-                    </button>
-                    <div class="dropdown-menu" id="userDropdown">
-                        <a href="/profile-page"><i class="fas fa-user"></i> Profile</a>
-                        <a href="#" id="logoutBtn"><i class="fas fa-sign-out-alt"></i> Logout</a>
-                    </div>
-                </div>
-                <a href="/login-page" class="btn-primary" id="loginLink">Login</a>
-            </div>
+<body data-page="jobs">
+
+<nav class="navbar">
+  <div class="container">
+    <a href="/" class="nav-brand"><i class="fas fa-brain"></i><span>ResumeIQ Pro</span></a>
+    <div class="nav-links">
+      <a href="/">Analyze</a>
+      <a href="/compare-page">Compare</a>
+      <a href="/history-page">History</a>
+      <a href="/jobs-page" class="active">Jobs</a>
+      <div class="user-menu" id="userMenu" style="display:none;">
+        <button class="btn-ghost" id="userMenuButton">
+          <i class="fas fa-user-circle"></i><span id="userName">Me</span>
+        </button>
+        <div class="dropdown-menu" id="userDropdown">
+          <a href="/profile-page"><i class="fas fa-user"></i> Profile</a>
+          <div class="dropdown-divider"></div>
+          <a href="#" id="logoutBtn"><i class="fas fa-sign-out-alt"></i> Sign Out</a>
         </div>
-    </nav>
+      </div>
+      <a href="/login-page" class="btn-primary" id="loginLink">Sign In</a>
+      <button id="themeToggle" style="background:none;border:1px solid rgba(255,255,255,0.2);border-radius:6px;padding:5px 9px;color:white;cursor:pointer;">🌙</button>
+    </div>
+  </div>
+</nav>
 
-    <main class="main-content">
-        <div class="container">
-            <!-- Summary Cards -->
-            <div class="summary-cards" id="summaryCards">
-                <div class="summary-card"><div class="s-val" id="sAll">0</div><div class="s-lbl">Total Jobs</div></div>
-                <div class="summary-card"><div class="s-val" style="color:#1d4ed8;" id="sSaved">0</div><div class="s-lbl">Saved</div></div>
-                <div class="summary-card"><div class="s-val" style="color:#92400e;" id="sApplied">0</div><div class="s-lbl">Applied</div></div>
-                <div class="summary-card"><div class="s-val" style="color:#6d28d9;" id="sInterview">0</div><div class="s-lbl">Interviews</div></div>
-                <div class="summary-card"><div class="s-val" style="color:#065f46;" id="sOffer">0</div><div class="s-lbl">Offers</div></div>
-            </div>
+<div class="main-content">
+  <div class="container" style="max-width:1280px;">
 
-            <div class="card">
-                <div class="tracker-header">
-                    <h2><i class="fas fa-briefcase"></i> Job Applications</h2>
-                    <button class="btn-primary" id="addJobBtn"><i class="fas fa-plus"></i> Add Job</button>
-                </div>
-
-                <div class="filter-bar" id="filterBar">
-                    <button class="filter-btn active" data-status="all">All</button>
-                    <button class="filter-btn" data-status="saved">Saved</button>
-                    <button class="filter-btn" data-status="applied">Applied</button>
-                    <button class="filter-btn" data-status="interview">Interview</button>
-                    <button class="filter-btn" data-status="offer">Offer</button>
-                    <button class="filter-btn" data-status="rejected">Rejected</button>
-                </div>
-
-                <div class="jobs-grid" id="jobsGrid">
-                    <div class="empty-state">
-                        <i class="fas fa-spinner fa-spin"></i>
-                        <p>Loading...</p>
-                    </div>
-                </div>
-            </div>
-        </div>
-    </main>
-
-    <!-- Add/Edit Modal -->
-    <div class="modal-overlay" id="jobModal">
-        <div class="modal">
-            <div class="modal-header">
-                <span class="modal-title" id="modalTitle">Add Job</span>
-                <button class="modal-close" id="closeModal"><i class="fas fa-times"></i></button>
-            </div>
-            <input type="hidden" id="editJobId">
-            <div class="form-row-2">
-                <div class="form-group">
-                    <label>Job Title *</label>
-                    <input type="text" id="fieldTitle" placeholder="e.g., Software Engineer">
-                </div>
-                <div class="form-group">
-                    <label>Company *</label>
-                    <input type="text" id="fieldCompany" placeholder="e.g., Google">
-                </div>
-            </div>
-            <div class="form-row-2">
-                <div class="form-group">
-                    <label>Status</label>
-                    <select id="fieldStatus">
-                        <option value="saved">💾 Saved</option>
-                        <option value="applied">📤 Applied</option>
-                        <option value="interview">🎯 Interview</option>
-                        <option value="offer">🎉 Offer</option>
-                        <option value="rejected">❌ Rejected</option>
-                    </select>
-                </div>
-                <div class="form-group">
-                    <label>Date Applied</label>
-                    <input type="date" id="fieldDate">
-                </div>
-            </div>
-            <div class="form-row-2">
-                <div class="form-group">
-                    <label>Location</label>
-                    <input type="text" id="fieldLocation" placeholder="e.g., Remote / New York">
-                </div>
-                <div class="form-group">
-                    <label>Salary Range</label>
-                    <input type="text" id="fieldSalary" placeholder="e.g., $120k – $150k">
-                </div>
-            </div>
-            <div class="form-group">
-                <label>Job URL</label>
-                <input type="url" id="fieldUrl" placeholder="https://...">
-            </div>
-            <div class="form-group">
-                <label>Notes</label>
-                <textarea id="fieldNotes" rows="3" placeholder="Interview tips, contacts, follow-up actions..."></textarea>
-            </div>
-            <div style="display:flex;gap:0.75rem;margin-top:0.5rem;">
-                <button class="btn-primary" id="saveJobBtn"><i class="fas fa-save"></i> Save</button>
-                <button class="btn-secondary" id="cancelJobBtn">Cancel</button>
-            </div>
-        </div>
+    <!-- Header -->
+    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:1.5rem;flex-wrap:wrap;gap:1rem;">
+      <div>
+        <h1 style="font-size:1.6rem;font-weight:700;margin-bottom:4px;">Job Application Tracker</h1>
+        <p style="color:var(--slate-light);font-size:0.9rem;">Track every application from saved to accepted — all synced to your account.</p>
+      </div>
+      <button class="btn btn-primary" id="addJobBtn"><i class="fas fa-plus"></i> Add Job</button>
     </div>
 
-    <footer class="footer">
-        <div class="container"><div class="footer-bottom"><p>&copy; 2026 ResumeIQ Pro.</p></div></div>
-    </footer>
+    <!-- Summary cards -->
+    <div class="insight-row" id="jobSummary" style="margin-bottom:1.5rem;"></div>
 
-    <script>
-        // Storage key for jobs (localStorage as lightweight store — works without login too)
-        const JOBS_KEY = 'resumeiq_jobs';
-        let jobs = [];
-        let currentFilter = 'all';
-        let editingId = null;
+    <!-- Filter bar -->
+    <div class="filter-bar" id="filterBar">
+      <button class="filter-btn active" data-status="">All</button>
+      <button class="filter-btn" data-status="saved">🔖 Saved</button>
+      <button class="filter-btn" data-status="applied">📨 Applied</button>
+      <button class="filter-btn" data-status="phone_screen">📞 Phone Screen</button>
+      <button class="filter-btn" data-status="interview">💼 Interview</button>
+      <button class="filter-btn" data-status="offer">🎉 Offer</button>
+      <button class="filter-btn" data-status="accepted">✅ Accepted</button>
+      <button class="filter-btn" data-status="rejected">❌ Rejected</button>
+    </div>
 
-        function loadJobs() {
-            try { jobs = JSON.parse(localStorage.getItem(JOBS_KEY) || '[]'); } catch { jobs = []; }
-        }
+    <!-- Kanban board -->
+    <div id="jobsContent">
+      <div style="text-align:center;padding:3rem;color:var(--slate-light);">
+        <i class="fas fa-spinner fa-spin" style="font-size:1.5rem;"></i>
+      </div>
+    </div>
 
-        function saveJobs() {
-            localStorage.setItem(JOBS_KEY, JSON.stringify(jobs));
-        }
+  </div>
+</div>
 
-        function renderSummary() {
-            const counts = { saved: 0, applied: 0, interview: 0, offer: 0, rejected: 0 };
-            jobs.forEach(j => { if (counts[j.status] !== undefined) counts[j.status]++; });
-            document.getElementById('sAll').textContent = jobs.length;
-            document.getElementById('sSaved').textContent = counts.saved;
-            document.getElementById('sApplied').textContent = counts.applied;
-            document.getElementById('sInterview').textContent = counts.interview;
-            document.getElementById('sOffer').textContent = counts.offer;
-        }
+<!-- JOB MODAL -->
+<div class="modal-overlay" id="jobModal">
+  <div class="modal" style="max-width:600px;">
+    <div class="modal-header">
+      <span class="modal-title"><i class="fas fa-briefcase"></i> Job Application</span>
+      <button class="modal-close">×</button>
+    </div>
+    <form id="jobForm">
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;">
+        <div class="field-group" style="grid-column:1/-1;">
+          <label class="field-label">Job Title *</label>
+          <input type="text" id="jobTitle" class="form-input" placeholder="e.g. Senior Software Engineer" required>
+        </div>
+        <div class="field-group">
+          <label class="field-label">Company *</label>
+          <input type="text" id="jobCompany" class="form-input" placeholder="e.g. Google" required>
+        </div>
+        <div class="field-group">
+          <label class="field-label">Location</label>
+          <input type="text" id="jobLocation" class="form-input" placeholder="e.g. Remote / NYC">
+        </div>
+        <div class="field-group">
+          <label class="field-label">Job URL</label>
+          <input type="url" id="jobUrl" class="form-input" placeholder="https://…">
+        </div>
+        <div class="field-group">
+          <label class="field-label">Salary Range</label>
+          <input type="text" id="jobSalary" class="form-input" placeholder="e.g. $120k–$150k">
+        </div>
+        <div class="field-group">
+          <label class="field-label">Status</label>
+          <select id="jobStatus" class="form-input">
+            <option value="saved">🔖 Saved</option>
+            <option value="applied">📨 Applied</option>
+            <option value="phone_screen">📞 Phone Screen</option>
+            <option value="interview">💼 Interview</option>
+            <option value="offer">🎉 Offer</option>
+            <option value="accepted">✅ Accepted</option>
+            <option value="rejected">❌ Rejected</option>
+          </select>
+        </div>
+        <div class="field-group">
+          <label class="field-label">Applied Date</label>
+          <input type="date" id="jobApplied" class="form-input">
+        </div>
+        <div class="field-group">
+          <label class="field-label">Deadline</label>
+          <input type="date" id="jobDeadline" class="form-input">
+        </div>
+        <div class="field-group" style="grid-column:1/-1;">
+          <label class="field-label">Notes</label>
+          <textarea id="jobNotes" class="form-textarea" placeholder="Interview feedback, contacts, links…" rows="3"></textarea>
+        </div>
+      </div>
+      <div style="display:flex;gap:10px;margin-top:1.25rem;flex-wrap:wrap;">
+        <button type="submit" class="btn btn-primary"><i class="fas fa-save"></i> Save</button>
+        <button type="button" class="btn btn-danger" id="deleteJobBtn" onclick="deleteJob()" style="display:none;"><i class="fas fa-trash"></i> Delete</button>
+        <button type="button" class="btn btn-outline" onclick="closeModal('jobModal')">Cancel</button>
+      </div>
+    </form>
+  </div>
+</div>
 
-        function renderJobs() {
-            const grid = document.getElementById('jobsGrid');
-            const filtered = currentFilter === 'all' ? jobs : jobs.filter(j => j.status === currentFilter);
-
-            if (filtered.length === 0) {
-                grid.innerHTML = `<div class="empty-state">
-                    <i class="fas fa-inbox"></i>
-                    <p>${currentFilter === 'all' ? 'No jobs added yet. Click "Add Job" to get started!' : 'No jobs with status: ' + currentFilter}</p>
-                </div>`;
-                return;
-            }
-
-            const statusIcons = { saved: '💾', applied: '📤', interview: '🎯', offer: '🎉', rejected: '❌' };
-            const statusClass = { saved: 'status-saved', applied: 'status-applied', interview: 'status-interview', offer: 'status-offer', rejected: 'status-rejected' };
-
-            grid.innerHTML = filtered.slice().reverse().map(j => `
-                <div class="job-card">
-                    <div>
-                        <div class="job-title">${escHtml(j.title)}</div>
-                        <div class="job-company"><i class="fas fa-building"></i> ${escHtml(j.company)}</div>
-                        <div class="job-meta">
-                            ${j.location ? `<span><i class="fas fa-map-marker-alt"></i> ${escHtml(j.location)}</span>` : ''}
-                            ${j.salary ? `<span><i class="fas fa-dollar-sign"></i> ${escHtml(j.salary)}</span>` : ''}
-                            ${j.date ? `<span><i class="fas fa-calendar"></i> ${j.date}</span>` : ''}
-                            ${j.url ? `<span><a href="${escHtml(j.url)}" target="_blank" style="color:var(--primary);">View Posting <i class="fas fa-external-link-alt"></i></a></span>` : ''}
-                        </div>
-                        ${j.notes ? `<div style="margin-top:0.5rem;font-size:0.85rem;color:var(--gray-600);background:var(--gray-100);padding:0.5rem 0.75rem;border-radius:0.4rem;">${escHtml(j.notes)}</div>` : ''}
-                        <div class="job-actions">
-                            <button class="btn-xs" onclick="openEdit('${j.id}')"><i class="fas fa-edit"></i> Edit</button>
-                            <button class="btn-xs danger" onclick="deleteJob('${j.id}')"><i class="fas fa-trash"></i> Delete</button>
-                        </div>
-                    </div>
-                    <div>
-                        <span class="status-badge ${statusClass[j.status]}">${statusIcons[j.status]} ${j.status.charAt(0).toUpperCase() + j.status.slice(1)}</span>
-                    </div>
-                </div>
-            `).join('');
-        }
-
-        function escHtml(s) {
-            return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
-        }
-
-        function openAdd() {
-            editingId = null;
-            document.getElementById('modalTitle').textContent = 'Add Job';
-            document.getElementById('editJobId').value = '';
-            document.getElementById('fieldTitle').value = '';
-            document.getElementById('fieldCompany').value = '';
-            document.getElementById('fieldStatus').value = 'saved';
-            document.getElementById('fieldDate').value = new Date().toISOString().split('T')[0];
-            document.getElementById('fieldLocation').value = '';
-            document.getElementById('fieldSalary').value = '';
-            document.getElementById('fieldUrl').value = '';
-            document.getElementById('fieldNotes').value = '';
-            document.getElementById('jobModal').classList.add('open');
-            document.getElementById('fieldTitle').focus();
-        }
-
-        function openEdit(id) {
-            const j = jobs.find(x => x.id === id);
-            if (!j) return;
-            editingId = id;
-            document.getElementById('modalTitle').textContent = 'Edit Job';
-            document.getElementById('fieldTitle').value = j.title;
-            document.getElementById('fieldCompany').value = j.company;
-            document.getElementById('fieldStatus').value = j.status;
-            document.getElementById('fieldDate').value = j.date || '';
-            document.getElementById('fieldLocation').value = j.location || '';
-            document.getElementById('fieldSalary').value = j.salary || '';
-            document.getElementById('fieldUrl').value = j.url || '';
-            document.getElementById('fieldNotes').value = j.notes || '';
-            document.getElementById('jobModal').classList.add('open');
-        }
-
-        function closeModal() {
-            document.getElementById('jobModal').classList.remove('open');
-            editingId = null;
-        }
-
-        function saveJob() {
-            const title = document.getElementById('fieldTitle').value.trim();
-            const company = document.getElementById('fieldCompany').value.trim();
-            if (!title || !company) { alert('Job title and company are required.'); return; }
-
-            const job = {
-                id: editingId || ('job_' + Date.now()),
-                title,
-                company,
-                status: document.getElementById('fieldStatus').value,
-                date: document.getElementById('fieldDate').value,
-                location: document.getElementById('fieldLocation').value.trim(),
-                salary: document.getElementById('fieldSalary').value.trim(),
-                url: document.getElementById('fieldUrl').value.trim(),
-                notes: document.getElementById('fieldNotes').value.trim(),
-                createdAt: editingId ? (jobs.find(j => j.id === editingId)?.createdAt || Date.now()) : Date.now()
-            };
-
-            if (editingId) {
-                const idx = jobs.findIndex(j => j.id === editingId);
-                if (idx >= 0) jobs[idx] = job;
-            } else {
-                jobs.push(job);
-            }
-
-            saveJobs();
-            renderSummary();
-            renderJobs();
-            closeModal();
-        }
-
-        function deleteJob(id) {
-            if (!confirm('Delete this job?')) return;
-            jobs = jobs.filter(j => j.id !== id);
-            saveJobs();
-            renderSummary();
-            renderJobs();
-        }
-
-        // Filter buttons
-        document.getElementById('filterBar').addEventListener('click', (e) => {
-            const btn = e.target.closest('.filter-btn');
-            if (!btn) return;
-            document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
-            btn.classList.add('active');
-            currentFilter = btn.dataset.status;
-            renderJobs();
-        });
-
-        document.getElementById('addJobBtn').addEventListener('click', openAdd);
-        document.getElementById('closeModal').addEventListener('click', closeModal);
-        document.getElementById('cancelJobBtn').addEventListener('click', closeModal);
-        document.getElementById('saveJobBtn').addEventListener('click', saveJob);
-
-        // Close modal on backdrop click
-        document.getElementById('jobModal').addEventListener('click', (e) => {
-            if (e.target === document.getElementById('jobModal')) closeModal();
-        });
-
-        // Nav auth
-        fetch('/api/me').then(r => r.json()).then(data => {
-            if (data.logged_in) {
-                document.getElementById('loginLink').style.display = 'none';
-                document.getElementById('userMenu').style.display = 'block';
-                document.getElementById('userName').textContent = data.user.name;
-            }
-        }).catch(() => {});
-
-        document.getElementById('logoutBtn')?.addEventListener('click', async (e) => {
-            e.preventDefault();
-            await fetch('/api/logout', { method: 'POST' });
-            window.location.href = '/';
-        });
-        document.getElementById('userMenuButton')?.addEventListener('click', (e) => {
-            e.stopPropagation();
-            document.getElementById('userDropdown').classList.toggle('show');
-        });
-        document.addEventListener('click', () => document.getElementById('userDropdown')?.classList.remove('show'));
-
-        // Init
-        loadJobs();
-        renderSummary();
-        renderJobs();
-    </script>
+<script src="{{ url_for('static', filename='app.js') }}"></script>
 </body>
 </html>
