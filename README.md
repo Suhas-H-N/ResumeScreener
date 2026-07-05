@@ -1,425 +1,134 @@
-# 🚀 ResumeIQ Pro
+# ResumeIQ Pro v3.1 — AI-Powered Resume Screening Platform
 
-### AI-Powered Resume Analysis & ATS Optimization Platform
-
-![Python](https://img.shields.io/badge/Python-3.11+-blue.svg)
-![Flask](https://img.shields.io/badge/Flask-3.0+-green.svg)
-![License](https://img.shields.io/badge/License-MIT-yellow.svg)
-![Docker](https://img.shields.io/badge/Docker-Ready-blue.svg)
+A complete Flask web application for resume analysis, ATS scoring, skill gap detection, and job application tracking — with optional Claude AI integration.
 
 ---
 
-## 📌 Overview
+## Features
 
-ResumeIQ Pro is a modern AI-powered resume screening and optimization platform designed to help job seekers improve their resumes for Applicant Tracking Systems (ATS) and increase their chances of landing interviews.
+### Core Analysis
+- **Match Score** — TF-IDF cosine similarity between resume and job description
+- **ATS Score** — 5-dimension breakdown: keyword density, skill match, length, sections, action verbs
+- **Skill Gap Analysis** — 200+ tech + soft skills detected
+- **Keyword Analysis** — matched vs. missing keywords highlighted
+- **Readability Metrics** — Flesch-Kincaid grade + reading ease
 
-The platform combines Natural Language Processing (NLP), Machine Learning, and Claude AI to deliver intelligent resume evaluation, ATS scoring, skill-gap analysis, keyword optimization, and personalized recommendations.
+### Enhanced Insights
+- **Experience Level Detection** — Junior / Mid / Senior / Executive from resume text
+- **Salary Estimation** — US market ranges based on skills + experience level
+- **Quantification Scorer** — detects %, $, multipliers, team sizes in achievements
+- **Career Gap Detector** — flags employment gaps with actionable advice
+- **Resume Comparison** — side-by-side analysis of two candidates
+- **PDF Report Download** — professional branded PDF of analysis results
 
----
+### AI Features (requires `ANTHROPIC_API_KEY`)
+- **AI Summary** — Claude analyses the resume against the role
+- **Strengths & Weaknesses** — AI-identified pros/cons
+- **Cover Letter Generator** — tailored cover letters in 4 tones
+- **Resume Improver** — AI suggestions per section
 
-## ✨ Features
+### Job Application Tracker
+- Full CRUD — add, edit, delete, status update
+- **7 status stages**: Saved → Applied → Phone Screen → Interview → Offer → Rejected → Accepted
+- **Kanban board** view with status columns
+- All data persisted in database (not localStorage)
 
-### 🔍 Resume Analysis
-
-- Parse resumes from PDF, DOCX, and TXT formats
-- Extract structured resume information
-- Analyze resumes against job descriptions
-- Generate ATS compatibility scores
-- Evaluate readability and content quality
-
-### 🤖 AI-Powered Intelligence
-
-- Claude AI integration
-- Personalized improvement suggestions
-- Resume strengths and weaknesses analysis
-- Keyword optimization recommendations
-- AI-generated cover letters
-
-### 📊 Analytics & Reporting
-
-- ATS score breakdown
-- Skill gap analysis
-- Missing keyword detection
-- Resume comparison system
-- PDF report generation
-- CSV export support
-
-### 🔐 Authentication & Security
-
-- Secure user registration and login
-- Password hashing with Bcrypt
-- Session management
-- Password recovery workflow
-- API rate limiting
-- Audit logging
-
-### 🎨 User Experience
-
-- Responsive design
-- Drag-and-drop file upload
-- Real-time feedback
-- Interactive dashboard
-- Modern UI/UX
+### User System
+- Sign up / login / logout
+- Profile management (name, company, role)
+- Password change
+- Account deletion
+- Session-based auth
 
 ---
 
-## 🏗️ Technology Stack
-
-| Category | Technologies |
-|-----------|-------------|
-| Backend | Python, Flask |
-| AI | Claude AI |
-| NLP | Scikit-learn, TF-IDF |
-| Database | PostgreSQL, SQLite |
-| Authentication | Flask-Login, Bcrypt |
-| Reporting | ReportLab |
-| Containerization | Docker |
-| Caching | Redis |
-| Frontend | HTML, CSS, JavaScript |
-
----
-
-## 🎯 Core Functionalities
-
-### ATS Score Calculation
-
-ResumeIQ Pro evaluates resumes based on:
-
-- Keyword Relevance
-- Skill Coverage
-- Resume Structure
-- Readability
-- ATS Compatibility
-- Experience Alignment
-
-### Resume Matching
-
-The platform uses:
-
-- TF-IDF Vectorization
-- Cosine Similarity
-
-to calculate the match percentage between a resume and a job description.
-
-### Skill Gap Analysis
-
-Automatically identifies:
-
-- Matching Skills
-- Missing Skills
-- Recommended Skills
-- Industry-Relevant Keywords
-
----
-
-## 📸 Workflow
-
-```text
-Upload Resume
-      │
-      ▼
-Extract Content
-      │
-      ▼
-Analyze Job Description
-      │
-      ▼
-Calculate ATS Score
-      │
-      ▼
-Generate AI Insights
-      │
-      ▼
-Provide Recommendations
-      │
-      ▼
-Export Report
-```
-
----
-
-## 🚀 Quick Start
-
-### Prerequisites
-
-- Python 3.11+
-- PostgreSQL 15+ (Optional)
-- Redis 7+ (Optional)
-- Docker (Recommended)
-
----
-
-### Installation
+## Quick Start
 
 ```bash
-# Clone Repository
-git clone https://github.com/yourusername/resumeiq-pro.git
+# 1. Clone / extract project
+cd ResumeScreener
 
-# Navigate into project
-cd resumeiq-pro
+# 2. Create virtual environment
+python3 -m venv venv
+source venv/bin/activate      # Windows: venv\Scripts\activate
 
-# Create virtual environment
-python -m venv venv
-
-# Activate environment
-# Windows
-venv\Scripts\activate
-
-# Linux / Mac
-source venv/bin/activate
-
-# Install dependencies
+# 3. Install dependencies
 pip install -r requirements.txt
 
-# Configure environment variables
-cp .env.example .env
+# 4. (Optional) Add your Anthropic API key to .env
+echo "ANTHROPIC_API_KEY=sk-ant-..." >> .env
 
-# Run database migrations
-flask db upgrade
-
-# Start application
+# 5. Run
 python app.py
 ```
 
-Application will be available at:
+Open http://localhost:5000
 
-```bash
-http://localhost:5000
-```
+The SQLite database is created automatically on first run.
 
 ---
 
-## 🐳 Docker Deployment
+## File Structure
 
-```bash
-docker-compose up -d
 ```
-
-Check logs:
-
-```bash
-docker-compose logs -f
-```
-
-Stop services:
-
-```bash
-docker-compose down
-```
-
----
-
-## 📁 Project Structure
-
-```text
-ResumeIQ-Pro/
-│
-├── app.py
-├── config.py
-├── models.py
-├── extensions.py
-├── ai_service.py
-├── nlp_utils.py
-├── document_utils.py
-├── report_generator.py
-├── requirements.txt
-├── Dockerfile
-├── docker-compose.yml
-│
+ResumeScreener/
+├── app.py              # All routes — auth, analyze, compare, history, jobs, AI, report
+├── models.py           # User, Analysis, Comparison, JobApplication, AuditLog
+├── config.py           # Dev/prod config (SQLite dev, no Redis needed)
+├── extensions.py       # Flask extensions (login, bcrypt, cors, limiter)
+├── nlp_utils.py        # TF-IDF scoring, ATS, readability, salary, gap detection
+├── ai_service.py       # Claude API wrapper (claude-sonnet-4-6)
+├── document_utils.py   # PDF/DOCX/TXT extraction
+├── report_generator.py # ReportLab PDF generation
+├── requirements.txt    # Minimal, no Redis/Celery/Sentry
+├── .env                # Environment variables
 ├── static/
-│   ├── style.css
-│   └── app.js
-│
-├── templates/
-│   ├── index.html
-│   ├── login.html
-│   ├── signup.html
-│   ├── history.html
-│   └── compare.html
-│
-├── migrations/
-├── tests/
-└── docs/
+│   ├── style.css       # Full design system (navy/gold theme + dark mode)
+│   └── app.js          # Complete SPA frontend (no framework)
+└── templates/
+    ├── index.html      # Analyzer with score rings, tabs, AI panel
+    ├── compare.html    # Side-by-side resume comparison
+    ├── history.html    # Paginated history with detail modal
+    ├── profile.html    # Profile + stats + password change
+    ├── jobs.html       # Kanban job tracker (DB-backed)
+    ├── login.html
+    ├── signup.html
+    ├── 404.html
+    └── 500.html
 ```
 
 ---
 
-## 🔗 API Endpoints
+## What Was Fixed vs Original
 
-### Authentication
-
-```http
-POST   /api/signup
-POST   /api/login
-POST   /api/logout
-GET    /api/me
-POST   /api/forgot-password
-POST   /api/reset-password
-```
-
-### Resume Analysis
-
-```http
-POST   /api/analyze
-POST   /api/compare
-GET    /api/history
-GET    /api/history/<id>
-DELETE /api/history/<id>
-GET    /api/export/history
-```
-
-### AI Features
-
-```http
-POST   /api/ai/improve
-POST   /api/ai/cover-letter
-```
-
-### Utilities
-
-```http
-POST   /api/download-report
-GET    /api/stats
-GET    /health
-```
+| Problem | Fix |
+|---|---|
+| `extensions.py` hard-required Redis — crashed on startup | Replaced with `storage_uri="memory://"` — zero config |
+| `config.py` referenced Redis, Celery, Sentry everywhere | Stripped to minimal dev config |
+| `ai_service.py` used invalid model `claude-sonnet-4-20250514` | Fixed to `claude-sonnet-4-6` |
+| `/api/jobs` routes **didn't exist** — entire jobs page was broken | Full CRUD implemented (GET/POST/PUT/DELETE) |
+| Job tracker used localStorage — wiped on browser clear | DB-persisted `JobApplication` model |
+| `requirements.txt` missing flask-login, flask-bcrypt, etc. | Complete accurate requirements |
+| `models.py` missing `JobApplication` model | Added with all fields + `to_dict()` |
+| Kanban had no real data source | Renders live from `/api/jobs` |
+| Job status summary hardcoded | Live counts from DB per status |
+| Score display was plain text number | Animated SVG score rings |
+| ATS breakdown had no visualization | Animated progress bars per dimension |
+| AI section missing when no API key | Graceful fallback with setup instructions |
+| Password strength only on signup | Also on profile security tab |
+| History detail showed nothing | Full modal with skills, recs, AI summary |
+| Cover letter modal wired to nothing | Full AI generation flow |
+| Theme toggle added but not wired | localStorage-persisted dark mode |
+| `flask-migrate` import crash (unused) | Removed entirely |
+| `flask-jwt-extended` + `flask-mail` imported but unused | Removed from extensions |
 
 ---
 
-## 🧪 Testing
+## Environment Variables
 
-Run all tests:
-
-```bash
-pytest
-```
-
-Run with coverage:
-
-```bash
-pytest --cov=. --cov-report=html
-```
-
-Run integration tests:
-
-```bash
-pytest tests/integration/
-```
-
----
-
-## 🔒 Security Features
-
-- Password Hashing (Bcrypt)
-- CSRF Protection
-- SQL Injection Prevention
-- Secure Session Management
-- Rate Limiting
-- Input Validation
-- File Upload Restrictions
-- HTTPS Support
-
----
-
-## 📈 Performance Optimization
-
-- Redis Caching
-- Optimized Database Queries
-- Connection Pooling
-- Lazy Loading
-- Static Asset Optimization
-- Dockerized Deployment
-
----
-
-## 🤝 Contributing
-
-Contributions are welcome.
-
-### Steps
-
-1. Fork the repository
-2. Create a feature branch
-
-```bash
-git checkout -b feature/new-feature
-```
-
-3. Commit your changes
-
-```bash
-git commit -m "Add new feature"
-```
-
-4. Push to GitHub
-
-```bash
-git push origin feature/new-feature
-```
-
-5. Open a Pull Request
-
----
-
-## 🌟 Future Enhancements
-
-### Version 3.1
-
-- Email Verification
-- Analytics Dashboard
-- Resume Templates
-- LinkedIn Integration
-- Chrome Extension
-
-### Version 3.2
-
-- Team Collaboration
-- Public API
-- Mobile Applications
-- Multi-language Support
-
-### Version 4.0
-
-- Enterprise Dashboard
-- Job Recommendation Engine
-- Salary Insights
-- Advanced AI Models
-
----
-
-## 📊 Why ResumeIQ Pro?
-
-✅ ATS Optimization
-
-✅ AI-Powered Resume Review
-
-✅ Skill Gap Detection
-
-✅ Resume-to-Job Matching
-
-✅ Cover Letter Generation
-
-✅ Professional Reports
-
-✅ Secure Authentication
-
-✅ Docker Ready
-
----
-
-## 👨‍💻 Author
-
-### Suhas H N
-
-Software Developer | AI Enthusiast | Full Stack Developer
-
-**GitHub:** https://github.com/Suhas-H-N
-
----
-
-## 📄 License
-
-This project is licensed under the MIT License.
-
----
-
-⭐ If you found this project useful, consider giving it a star on GitHub.
+| Variable | Default | Description |
+|---|---|---|
+| `SECRET_KEY` | dev key | Change in production |
+| `DATABASE_URL` | sqlite:///resumeiq.db | Any SQLAlchemy URL |
+| `ANTHROPIC_API_KEY` | _(empty)_ | Optional — enables AI features |
+| `FLASK_ENV` | development | Set `production` to disable debug |
