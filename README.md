@@ -1,134 +1,156 @@
-# ResumeIQ Pro v3.1 — AI-Powered Resume Screening Platform
+# ResumeScreener
 
-A complete Flask web application for resume analysis, ATS scoring, skill gap detection, and job application tracking — with optional Claude AI integration.
+ResumeScreener is a Flask-based resume analysis and applicant screening application built to help recruiters, hiring teams, and job seekers evaluate resumes against job descriptions. It combines ATS-style scoring, skill matching, readability checks, comparison tools, AI-powered insights, and application tracking in a single dashboard.
 
----
+## Overview
+
+The app can:
+
+- Analyze a resume against a job description
+- Calculate match score and ATS adequacy
+- Detect missing skills and keyword gaps
+- Score resume readability and structure quality
+- Estimate experience level and salary range
+- Compare two resumes side-by-side
+- Store analysis history for logged-in users
+- Track job applications through a Kanban-style workflow
+- Optionally use Anthropic AI for summary and improvement suggestions
 
 ## Features
 
-### Core Analysis
-- **Match Score** — TF-IDF cosine similarity between resume and job description
-- **ATS Score** — 5-dimension breakdown: keyword density, skill match, length, sections, action verbs
-- **Skill Gap Analysis** — 200+ tech + soft skills detected
-- **Keyword Analysis** — matched vs. missing keywords highlighted
-- **Readability Metrics** — Flesch-Kincaid grade + reading ease
+### Core screening
+- Match score evaluation based on resume-to-job relevance
+- ATS score breakdown across key hiring signals
+- Skill extraction and gap detection
+- Missing keyword highlighting
+- Readability and content quality checks
 
-### Enhanced Insights
-- **Experience Level Detection** — Junior / Mid / Senior / Executive from resume text
-- **Salary Estimation** — US market ranges based on skills + experience level
-- **Quantification Scorer** — detects %, $, multipliers, team sizes in achievements
-- **Career Gap Detector** — flags employment gaps with actionable advice
-- **Resume Comparison** — side-by-side analysis of two candidates
-- **PDF Report Download** — professional branded PDF of analysis results
+### Advanced insights
+- Experience level detection
+- Salary estimate suggestions
+- Quantification analysis of achievements
+- Career gap detection warnings
+- Resume comparison between two candidates
+- PDF report generation for analysis results
 
-### AI Features (requires `ANTHROPIC_API_KEY`)
-- **AI Summary** — Claude analyses the resume against the role
-- **Strengths & Weaknesses** — AI-identified pros/cons
-- **Cover Letter Generator** — tailored cover letters in 4 tones
-- **Resume Improver** — AI suggestions per section
+### AI-powered features
+- Resume summary against the target role
+- Strengths and weaknesses analysis
+- Cover letter generation
+- Improvement suggestions by focus area
+- Optional integration via `ANTHROPIC_API_KEY`
 
-### Job Application Tracker
-- Full CRUD — add, edit, delete, status update
-- **7 status stages**: Saved → Applied → Phone Screen → Interview → Offer → Rejected → Accepted
-- **Kanban board** view with status columns
-- All data persisted in database (not localStorage)
+### User and job tracking
+- Signup, login, logout, and session-based auth
+- Profile management and password updates
+- Analysis history with per-user records
+- Full job application tracker with CRUD support
+- Status board from Saved to Accepted
 
-### User System
-- Sign up / login / logout
-- Profile management (name, company, role)
-- Password change
-- Account deletion
-- Session-based auth
+## Tech stack
 
----
+- Python 3
+- Flask
+- SQLAlchemy
+- Flask-Login
+- Flask-Bcrypt
+- Flask-Limiter
+- Flask-CORS
+- ReportLab
+- PyMuPDF / document parsing support
+- SQLite (default development database)
+- Optional Anthropic API integration
 
-## Quick Start
+## Project structure
+
+```text
+ResumeScreener/
+├── app.py                 # Flask routes and application logic
+├── config.py              # App configuration
+├── extensions.py          # Flask extension setup
+├── models.py              # SQLAlchemy models for users, analyses, jobs, and logs
+├── nlp_utils.py           # ATS, scoring, and text-processing utilities
+├── ai_service.py          # Optional Claude AI integration
+├── document_utils.py      # Resume file parsing and validation
+├── report_generator.py    # PDF report generation
+├── requirements.txt       # Python dependencies
+├── .env                   # Local environment variables
+├── static/
+│   ├── app.js             # Frontend logic
+│   └── style.css          # Styling and layout
+├── templates/
+│   ├── 404.html
+│   ├── 500.html
+│   ├── compare.html
+│   ├── history.html
+│   ├── index.html
+│   ├── jobs.html
+│   ├── login.html
+│   ├── profile.html
+│   ├── signup.html
+│   └── ...
+├── README.md
+└── resumeiq.db            # Local SQLite DB (created on first run)
+```
+
+## Quick start
 
 ```bash
-# 1. Clone / extract project
+# 1. Clone the repository
 cd ResumeScreener
 
-# 2. Create virtual environment
+# 2. Create a virtual environment
 python3 -m venv venv
-source venv/bin/activate      # Windows: venv\Scripts\activate
+source venv/bin/activate   # On Windows: venv\Scripts\activate
 
 # 3. Install dependencies
 pip install -r requirements.txt
 
-# 4. (Optional) Add your Anthropic API key to .env
-echo "ANTHROPIC_API_KEY=sk-ant-..." >> .env
+# 4. Create a .env file with required variables
+cat > .env <<'EOF'
+SECRET_KEY=your-secret-key
+FLASK_ENV=development
+DATABASE_URL=sqlite:///resumeiq.db
+ANTHROPIC_API_KEY=your_api_key_here
+EOF
 
-# 5. Run
+# 5. Run the app
 python app.py
 ```
 
-Open http://localhost:5000
+Then open:
 
-The SQLite database is created automatically on first run.
-
----
-
-## File Structure
-
-```
-ResumeScreener/
-├── app.py              # All routes — auth, analyze, compare, history, jobs, AI, report
-├── models.py           # User, Analysis, Comparison, JobApplication, AuditLog
-├── config.py           # Dev/prod config (SQLite dev, no Redis needed)
-├── extensions.py       # Flask extensions (login, bcrypt, cors, limiter)
-├── nlp_utils.py        # TF-IDF scoring, ATS, readability, salary, gap detection
-├── ai_service.py       # Claude API wrapper (claude-sonnet-4-6)
-├── document_utils.py   # PDF/DOCX/TXT extraction
-├── report_generator.py # ReportLab PDF generation
-├── requirements.txt    # Minimal, no Redis/Celery/Sentry
-├── .env                # Environment variables
-├── static/
-│   ├── style.css       # Full design system (navy/gold theme + dark mode)
-│   └── app.js          # Complete SPA frontend (no framework)
-└── templates/
-    ├── index.html      # Analyzer with score rings, tabs, AI panel
-    ├── compare.html    # Side-by-side resume comparison
-    ├── history.html    # Paginated history with detail modal
-    ├── profile.html    # Profile + stats + password change
-    ├── jobs.html       # Kanban job tracker (DB-backed)
-    ├── login.html
-    ├── signup.html
-    ├── 404.html
-    └── 500.html
+```text
+http://localhost:5000
 ```
 
----
+The SQLite database is created automatically when the app starts for the first time.
 
-## What Was Fixed vs Original
+## Environment variables
 
-| Problem | Fix |
-|---|---|
-| `extensions.py` hard-required Redis — crashed on startup | Replaced with `storage_uri="memory://"` — zero config |
-| `config.py` referenced Redis, Celery, Sentry everywhere | Stripped to minimal dev config |
-| `ai_service.py` used invalid model `claude-sonnet-4-20250514` | Fixed to `claude-sonnet-4-6` |
-| `/api/jobs` routes **didn't exist** — entire jobs page was broken | Full CRUD implemented (GET/POST/PUT/DELETE) |
-| Job tracker used localStorage — wiped on browser clear | DB-persisted `JobApplication` model |
-| `requirements.txt` missing flask-login, flask-bcrypt, etc. | Complete accurate requirements |
-| `models.py` missing `JobApplication` model | Added with all fields + `to_dict()` |
-| Kanban had no real data source | Renders live from `/api/jobs` |
-| Job status summary hardcoded | Live counts from DB per status |
-| Score display was plain text number | Animated SVG score rings |
-| ATS breakdown had no visualization | Animated progress bars per dimension |
-| AI section missing when no API key | Graceful fallback with setup instructions |
-| Password strength only on signup | Also on profile security tab |
-| History detail showed nothing | Full modal with skills, recs, AI summary |
-| Cover letter modal wired to nothing | Full AI generation flow |
-| Theme toggle added but not wired | localStorage-persisted dark mode |
-| `flask-migrate` import crash (unused) | Removed entirely |
-| `flask-jwt-extended` + `flask-mail` imported but unused | Removed from extensions |
+| Variable | Required | Description |
+|---|---:|---|
+| `SECRET_KEY` | Yes | Secret key used by Flask sessions and security features |
+| `DATABASE_URL` | No | Database connection string; defaults to SQLite for local dev |
+| `ANTHROPIC_API_KEY` | No | Enables AI-based resume summary and improvement features |
+| `FLASK_ENV` | No | Set to `development` or `production` |
 
----
+## Notes
 
-## Environment Variables
+- AI-powered features are optional. If `ANTHROPIC_API_KEY` is not set, the app still works for core resume analysis features.
+- The project is designed for local development and demo use, with SQLite as the default database backend.
+- For production deployment, you should configure a stronger secret key, use a managed database, and secure your environment variables.
 
-| Variable | Default | Description |
-|---|---|---|
-| `SECRET_KEY` | dev key | Change in production |
-| `DATABASE_URL` | sqlite:///resumeiq.db | Any SQLAlchemy URL |
-| `ANTHROPIC_API_KEY` | _(empty)_ | Optional — enables AI features |
-| `FLASK_ENV` | development | Set `production` to disable debug |
+## License
+
+This project is currently provided as-is for personal or educational use. If you plan to use it in production or distribute it publicly, confirm the appropriate licensing requirements before deployment.
+
+## Contribution
+
+Contributions, improvements, and bug fixes are welcome. If you want to extend the project, consider improving:
+
+- job matching algorithm quality
+- document parsing support
+- UI/UX flow for recruiter workflows
+- AI summarization prompts and accuracy
+- deployment and production configuration
