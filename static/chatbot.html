@@ -1,0 +1,64 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#0d1b2a">
+  <title>AI Career Coach — ResumeIQ Pro</title>
+  <link rel="stylesheet" href="/static/style.css">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <style>
+    body { min-height:100vh; background:var(--ivory,#f7f5f0); }
+    .coach-wrap { max-width:820px; margin:3rem auto; padding:0 1rem; }
+    .coach-card { background:var(--white,#fff); border:1px solid var(--border,#e5e7eb); border-radius:16px; box-shadow:0 12px 40px rgba(13,27,42,.08); overflow:hidden; }
+    .coach-head { padding:1.25rem 1.5rem; color:#fff; background:linear-gradient(135deg,#0d1b2a,#1b4965); display:flex; align-items:center; gap:1rem; }
+    .coach-avatar { width:42px;height:42px;border-radius:50%;display:grid;place-items:center;background:rgba(255,255,255,.15);font-size:1.15rem; }
+    .coach-head h1 { font-size:1.1rem;margin:0; }
+    .coach-head p { margin:.25rem 0 0;opacity:.8;font-size:.82rem; }
+    #messages { height:min(58vh,560px); min-height:320px; overflow:auto; padding:1.25rem; display:flex; flex-direction:column; gap:.9rem; }
+    .bubble { max-width:85%;padding:.8rem 1rem;border-radius:14px;line-height:1.55;white-space:pre-wrap;overflow-wrap:anywhere;font-size:.92rem; }
+    .bubble.assistant { align-self:flex-start;background:#f1f3f5;color:#18212b;border-bottom-left-radius:4px; }
+    .bubble.user { align-self:flex-end;background:#17324d;color:white;border-bottom-right-radius:4px; }
+    .coach-compose { border-top:1px solid var(--border,#e5e7eb);padding:1rem;display:flex;gap:.75rem;align-items:flex-end; }
+    #question { flex:1;resize:vertical;min-height:48px;max-height:140px;border:1px solid #d5d9de;border-radius:10px;padding:.8rem;font:inherit; }
+    #send { min-width:48px;height:48px; }
+    .coach-note { padding:0 1rem 1rem;color:#687482;font-size:.75rem; }
+    .typing { opacity:.7;font-style:italic; }
+    @media(max-width:600px){.coach-wrap{margin:1rem auto}.bubble{max-width:94%}#messages{height:60vh}}
+  </style>
+</head>
+<body>
+  <nav class="navbar"><div class="container"><a href="/" class="nav-brand"><i class="fas fa-brain"></i><span>ResumeIQ Pro</span></a><div class="nav-links"><a href="/">Analyze</a><a href="/login-page" id="loginLink">Sign In</a></div></div></nav>
+  <main class="coach-wrap">
+    <section class="coach-card" aria-label="AI career coach">
+      <header class="coach-head"><div class="coach-avatar"><i class="fas fa-robot"></i></div><div><h1>AI Career Coach</h1><p>Ask about resumes, applications, interviews, and your next career move.</p></div></header>
+      <div id="messages" aria-live="polite"><div class="bubble assistant">Hi! I'm your AI career coach. What would you like help with today?</div></div>
+      <form class="coach-compose" id="chatForm"><label for="question" class="sr-only" style="position:absolute;left:-10000px">Your message</label><textarea id="question" maxlength="1200" placeholder="Ask a career or resume question…" required></textarea><button class="btn btn-primary" id="send" aria-label="Send message"><i class="fas fa-paper-plane"></i></button></form>
+      <div class="coach-note">AI responses can be inaccurate. Avoid sharing sensitive personal information. Sign in to use the coach.</div>
+    </section>
+  </main>
+<script>
+(() => {
+  const form=document.getElementById('chatForm'), input=document.getElementById('question'), messages=document.getElementById('messages'), send=document.getElementById('send');
+  const history=[];
+  function bubble(text, role, extra='') { const el=document.createElement('div'); el.className=`bubble ${role} ${extra}`; el.textContent=text; messages.appendChild(el); messages.scrollTop=messages.scrollHeight; return el; }
+  form.addEventListener('submit', async event => {
+    event.preventDefault(); const text=input.value.trim(); if(!text || send.disabled) return;
+    bubble(text,'user'); history.push({role:'User',text}); input.value=''; send.disabled=true;
+    const pending=bubble('Thinking…','assistant','typing');
+    try {
+      const transcript=history.slice(-12).map(m=>`${m.role}: ${m.text}`).join('\n');
+      const response=await fetch('/api/ai/improve',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({resume_text:transcript,focus_area:'chat'})});
+      const data=await response.json(); pending.remove();
+      if(response.status===401){bubble('Please sign in first, then return to the AI Career Coach.','assistant');return;}
+      if(!response.ok) throw new Error(data.error||'The coach could not respond. Check that AI is configured.');
+      const answer=data.suggestions||'I could not create a response. Please try again.'; bubble(answer,'assistant'); history.push({role:'Coach',text:answer});
+      if(history.length>16) history.splice(0,history.length-16);
+    } catch(error) { pending.remove(); bubble(error.message||'Network error. Please try again.','assistant'); }
+    finally { send.disabled=false; input.focus(); }
+  });
+  input.addEventListener('keydown',event=>{if(event.key==='Enter'&&!event.shiftKey){event.preventDefault();form.requestSubmit();}});
+})();
+</script>
+</body>
+</html>
