@@ -1,0 +1,205 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="description" content="Screen and rank multiple resumes against one job description.">
+  <title>Bulk Resume Screening | ResumeScreener</title>
+  <style>
+    :root { color-scheme: light; --ink:#172033; --muted:#667085; --line:#e4e8ef; --blue:#465fff; --surface:#fff; --bg:#f5f7fb; }
+    * { box-sizing:border-box; }
+    body { margin:0; background:var(--bg); color:var(--ink); font:15px/1.5 system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif; }
+    main { width:min(1080px,calc(100% - 32px)); margin:38px auto 64px; }
+    header { display:flex; justify-content:space-between; align-items:center; gap:16px; margin-bottom:28px; }
+    h1 { margin:0; font-size:clamp(25px,4vw,36px); letter-spacing:-.03em; }
+    h2 { margin:0 0 16px; font-size:20px; }
+    p { color:var(--muted); }
+    a { color:var(--blue); text-decoration:none; }
+    .card { background:var(--surface); border:1px solid var(--line); border-radius:14px; padding:24px; margin-bottom:20px; box-shadow:0 4px 18px #17203308; }
+    .field { margin-bottom:18px; }
+    label { display:block; font-weight:650; margin-bottom:7px; }
+    input[type="text"], textarea, input[type="file"] { width:100%; border:1px solid #cfd5df; border-radius:8px; padding:11px 12px; font:inherit; background:#fff; }
+    textarea { min-height:180px; resize:vertical; }
+    input:focus, textarea:focus, button:focus-visible, a:focus-visible { outline:3px solid #465fff55; outline-offset:2px; }
+    .hint { margin:6px 0 0; font-size:13px; }
+    button { border:0; border-radius:8px; background:var(--blue); color:white; padding:11px 17px; font:inherit; font-weight:700; cursor:pointer; }
+    button:disabled { opacity:.55; cursor:wait; }
+    .secondary { background:#edf0ff; color:#3444c5; }
+    .actions { display:flex; flex-wrap:wrap; gap:10px; align-items:center; }
+    .notice { margin-top:14px; color:var(--muted); }
+    .error { color:#b42318; }
+    .progress { height:8px; background:#e9ecf3; border-radius:8px; overflow:hidden; margin-top:12px; }
+    .progress > div { height:100%; width:0; background:var(--blue); transition:width .2s; }
+    .table-wrap { overflow-x:auto; }
+    table { width:100%; border-collapse:collapse; min-width:640px; }
+    th,td { text-align:left; padding:12px 10px; border-bottom:1px solid var(--line); vertical-align:top; }
+    th { color:var(--muted); font-size:12px; text-transform:uppercase; letter-spacing:.04em; }
+    td.score { font-weight:750; white-space:nowrap; }
+    .badge { display:inline-block; padding:3px 8px; border-radius:20px; background:#edf0ff; color:#3444c5; font-size:12px; }
+    .details { color:var(--muted); font-size:13px; margin-top:5px; }
+    .empty { color:var(--muted); text-align:center; padding:25px; }
+    [hidden] { display:none !important; }
+    @media(max-width:600px) { main { margin-top:22px; } .card { padding:18px; } header { align-items:flex-start; flex-direction:column; } }
+  </style>
+</head>
+<body>
+<main>
+  <header>
+    <div><h1>Bulk resume screening</h1><p>Compare a batch of candidates against the same job description.</p></div>
+    <a href="/">← Back to ResumeScreener</a>
+  </header>
+
+  <form id="screen-form" class="card">
+    <h2>Set up a screening batch</h2>
+    <div class="field">
+      <label for="job-title">Job title <span class="hint">(optional)</span></label>
+      <input id="job-title" name="job_title" type="text" maxlength="200" placeholder="e.g. Frontend Engineer">
+    </div>
+    <div class="field">
+      <label for="job-description">Job description</label>
+      <textarea id="job-description" name="job_description" required minlength="50" placeholder="Paste the complete job description here (at least 50 characters)."></textarea>
+    </div>
+    <div class="field">
+      <label for="resume-files">Resume files</label>
+      <input id="resume-files" name="resume_files" type="file" accept=".pdf,.docx,.doc,.txt" multiple required>
+      <p class="hint">Select up to 20 PDF, DOCX, DOC, or TXT files. Maximum 10 MB per file.</p>
+    </div>
+    <div class="actions">
+      <button id="submit-button" type="submit">Screen resumes</button>
+      <button id="csv-button" class="secondary" type="button" hidden>Download results as CSV</button>
+    </div>
+    <div id="status" class="notice" role="status" aria-live="polite"></div>
+    <div id="progress" class="progress" hidden aria-label="Screening progress"><div id="progress-bar"></div></div>
+  </form>
+
+  <section id="results-section" class="card" hidden>
+    <h2>Ranked candidates</h2>
+    <p id="results-summary"></p>
+    <div class="table-wrap">
+      <table>
+        <thead><tr><th>Rank</th><th>Resume</th><th>Match</th><th>ATS</th><th>Level</th><th>Skills matched</th></tr></thead>
+        <tbody id="results-body"></tbody>
+      </table>
+    </div>
+  </section>
+</main>
+<script>
+  const form = document.getElementById('screen-form');
+  const fileInput = document.getElementById('resume-files');
+  const submitButton = document.getElementById('submit-button');
+  const statusEl = document.getElementById('status');
+  const progress = document.getElementById('progress');
+  const progressBar = document.getElementById('progress-bar');
+  const resultsSection = document.getElementById('results-section');
+  const resultsBody = document.getElementById('results-body');
+  const csvButton = document.getElementById('csv-button');
+  let completedResults = [];
+
+  function cell(text, className) {
+    const td = document.createElement('td');
+    td.textContent = text;
+    if (className) td.className = className;
+    return td;
+  }
+
+  function showResults(results) {
+    completedResults = results.slice().sort((a, b) => b.match - a.match || b.ats - a.ats);
+    resultsBody.replaceChildren();
+    let rank = 0;
+    completedResults.forEach((result) => {
+      const row = document.createElement('tr');
+      if (result.error) {
+        row.append(cell('—'), cell(result.name), cell('Failed'), cell('—'), cell('—'), cell(result.error));
+      } else {
+        rank += 1;
+        row.append(cell(String(rank)), cell(result.name), cell(`${Number(result.match).toFixed(1)}%`, 'score'), cell(`${Number(result.ats).toFixed(1)}%`), cell(result.level || '—'), cell(String(result.skillCount ?? 0)));
+      }
+      resultsBody.append(row);
+    });
+    const successful = completedResults.filter(item => !item.error).length;
+    document.getElementById('results-summary').textContent = `${successful} of ${results.length} resumes screened successfully. Candidates are ranked by match score, with ATS score as a tie-breaker.`;
+    resultsSection.hidden = false;
+    csvButton.hidden = successful === 0;
+  }
+
+  form.addEventListener('submit', async (event) => {
+    event.preventDefault();
+    const files = Array.from(fileInput.files || []);
+    const jobDescription = document.getElementById('job-description').value.trim();
+    if (!jobDescription || jobDescription.length < 50) {
+      statusEl.textContent = 'Please provide a job description of at least 50 characters.';
+      statusEl.className = 'notice error';
+      return;
+    }
+    if (!files.length) {
+      statusEl.textContent = 'Select at least one resume file.';
+      statusEl.className = 'notice error';
+      return;
+    }
+    if (files.length > 20) {
+      statusEl.textContent = 'Please select no more than 20 files per batch.';
+      statusEl.className = 'notice error';
+      return;
+    }
+    const allowed = /\.(pdf|docx|doc|txt)$/i;
+    const invalid = files.find(file => !allowed.test(file.name) || file.size > 10 * 1024 * 1024);
+    if (invalid) {
+      statusEl.textContent = `${invalid.name}: use PDF, DOCX, DOC, or TXT files up to 10 MB each.`;
+      statusEl.className = 'notice error';
+      return;
+    }
+
+    submitButton.disabled = true;
+    csvButton.hidden = true;
+    resultsSection.hidden = true;
+    statusEl.className = 'notice';
+    progress.hidden = false;
+    progressBar.style.width = '0%';
+    const results = [];
+    const jobTitle = document.getElementById('job-title').value.trim();
+
+    for (let index = 0; index < files.length; index += 1) {
+      const file = files[index];
+      statusEl.textContent = `Screening ${index + 1} of ${files.length}: ${file.name}`;
+      const data = new FormData();
+      data.append('resume_file', file, file.name);
+      data.append('job_description', jobDescription);
+      data.append('job_title', jobTitle);
+      try {
+        const response = await fetch('/api/analyze', { method: 'POST', body: data, credentials: 'same-origin' });
+        const payload = await response.json();
+        if (!response.ok) throw new Error(payload.error || 'Analysis failed');
+        results.push({ name: file.name, match: payload.match_score, ats: payload.ats_scores?.overall ?? 0, level: payload.level || '—', skillCount: payload.matching_keywords?.length ?? 0 });
+      } catch (error) {
+        results.push({ name: file.name, error: error.message || 'Analysis failed' });
+      }
+      progressBar.style.width = `${Math.round(((index + 1) / files.length) * 100)}%`;
+    }
+
+    showResults(results);
+    const failed = results.filter(item => item.error).length;
+    statusEl.textContent = failed ? `Finished with ${failed} failed ${failed === 1 ? 'resume' : 'resumes'}. See the results table for details.` : 'Screening complete.';
+    statusEl.className = failed ? 'notice error' : 'notice';
+    submitButton.disabled = false;
+  });
+
+  csvButton.addEventListener('click', () => {
+    const rows = [['Rank', 'Resume', 'Match score', 'ATS score', 'Match level', 'Matched keywords', 'Error']];
+    let rank = 0;
+    completedResults.forEach(result => {
+      if (result.error) rows.push(['', result.name, '', '', '', '', result.error]);
+      else {
+        rank += 1;
+        rows.push([rank, result.name, Number(result.match).toFixed(1), Number(result.ats).toFixed(1), result.level, result.skillCount, '']);
+      }
+    });
+    const csv = rows.map(row => row.map(value => `"${String(value).replaceAll('"', '""')}"`).join(',')).join('\r\n');
+    const link = document.createElement('a');
+    link.href = URL.createObjectURL(new Blob([csv], { type: 'text/csv;charset=utf-8' }));
+    link.download = 'resume-screening-results.csv';
+    link.click();
+    URL.revokeObjectURL(link.href);
+  });
+</script>
+</body>
+</html>
